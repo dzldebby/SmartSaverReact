@@ -4,6 +4,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import BankCard from './components/BankCard';
 import ComparisonChart from './components/ComparisonChart';
 import { Tabs, TabsList, TabsTrigger } from './components/ui/tabs';
+import ChatButton from './components/ChatButton';
+import ChatWindow from './components/ChatWindow';
 import './App.css';
 
 function App() {
@@ -11,6 +13,7 @@ function App() {
   const [depositAmount, setDepositAmount] = useState(10000);
   const [calculationResults, setCalculationResults] = useState({});
   const [hasCalculated, setHasCalculated] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   
   // User requirements
   const [hasSalary, setHasSalary] = useState(false);
@@ -1346,6 +1349,34 @@ function App() {
             getBankById={getBankById}
           />
         </div>
+      )}
+
+      {/* Add chat components - only show after calculation */}
+      {hasCalculated && (
+        <>
+          <ChatButton 
+            onClick={() => setIsChatOpen(true)} 
+            isOpen={isChatOpen} 
+          />
+          
+          <ChatWindow 
+            isOpen={isChatOpen} 
+            onClose={() => setIsChatOpen(false)}
+            userInputs={{
+              depositAmount,
+              hasSalary,
+              salaryAmount,
+              cardSpend,
+              giroCount,
+              hasInsurance,
+              hasInvestments,
+              increasedBalance,
+              grewWealth
+            }}
+            calculationResults={calculationResults}
+            selectedBanks={selectedBanks}
+          />
+        </>
       )}
 
       <footer className="mt-12 text-center text-sm text-muted-foreground">

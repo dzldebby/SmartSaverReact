@@ -1,69 +1,62 @@
-# Bank Rate Calculator
+# SmartSaverSG Bank Calculator
 
-A modern web application for comparing bank loan rates and calculating monthly payments, total interest, and other important loan metrics.
+A tool to help users compare interest rates from different banks in Singapore.
 
 ## Features
 
-- Compare interest rates from multiple banks
-- Calculate monthly payments for different loan types (mortgage, auto, personal)
-- Interactive comparison charts for visualizing differences between banks
-- AI-powered chat assistant for answering financial questions
-- Responsive design that works on desktop and mobile devices
+- Calculate interest rates based on your deposit amount and banking habits
+- Compare different banks side by side
+- Interactive charts to visualize the differences
+- AI-powered chatbot to answer questions about bank features and interest calculations
 
-## Components
+## Setup
 
-The application includes the following key components:
-
-- **BankCard**: Displays information about a bank, including interest rates and key features
-- **ComparisonChart**: Visualizes differences between selected banks with charts for monthly payments, total interest, and amortization schedules
-- **ChatBot**: An AI assistant that can answer questions about banking, interest rates, and financial planning
-- **UI Components**: Button, Card, Tabs, Checkbox, Avatar, and more for a consistent user interface
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 14.x or higher
-- npm or yarn
-
-### Installation
-
-1. Clone the repository:
-```
-git clone https://github.com/yourusername/bank-calculator.git
-cd bank-calculator
-```
-
+1. Clone the repository
 2. Install dependencies:
-```
-npm install
-# or
-yarn install
-```
+   ```
+   npm install
+   ```
+3. Set up your OpenAI API key:
+   - Create a `.env.local` file in the root directory
+   - Add your OpenAI API key:
+     ```
+     OPENAI_API_KEY=your_openai_api_key_here
+     ```
+   - You can get an API key from [OpenAI's platform](https://platform.openai.com/api-keys)
 
-3. Start the development server:
-```
-npm start
-# or
-yarn start
-```
+## Running the Application
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+You need to run two servers:
 
-## Usage
+1. Start the Next.js API server:
+   ```
+   npm run dev
+   ```
 
-1. Select a loan type (mortgage, auto, or personal)
-2. Enter the loan amount and term
-3. Compare the different bank options displayed
-4. Select two or more banks to see a detailed comparison chart
-5. Use the chat assistant for any questions about banking or interest rates
+2. In a separate terminal, start the React app:
+   ```
+   npm start
+   ```
+
+## Using the Chatbot
+
+1. Fill out the calculator form and click "Calculate Interest Rates"
+2. After calculation, a chat button will appear in the bottom-right corner
+3. Click the button to open the chat window
+4. Ask questions about bank features, interest calculations, or recommendations
+
+Example questions:
+- "Why is UOB One giving higher interest than OCBC 360?"
+- "What would happen if I increased my card spend to $1,000?"
+- "How does DBS Multiplier calculate bonus interest?"
+- "Which bank is best for my profile?"
 
 ## Technologies Used
 
-- React.js
+- React
+- Next.js (for API routes)
+- OpenAI API
 - Tailwind CSS
-- React Hooks
-- Context API for state management
 
 ## License
 
