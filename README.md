@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Bank Rate Calculator
+
+A modern web application for comparing bank loan rates and calculating monthly payments, total interest, and other important loan metrics.
+
+## Features
+
+- Compare interest rates from multiple banks
+- Calculate monthly payments for different loan types (mortgage, auto, personal)
+- Interactive comparison charts for visualizing differences between banks
+- AI-powered chat assistant for answering financial questions
+- Responsive design that works on desktop and mobile devices
+
+## Components
+
+The application includes the following key components:
+
+- **BankCard**: Displays information about a bank, including interest rates and key features
+- **ComparisonChart**: Visualizes differences between selected banks with charts for monthly payments, total interest, and amortization schedules
+- **ChatBot**: An AI assistant that can answer questions about banking, interest rates, and financial planning
+- **UI Components**: Button, Card, Tabs, Checkbox, Avatar, and more for a consistent user interface
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 14.x or higher
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+```
+git clone https://github.com/yourusername/bank-calculator.git
+cd bank-calculator
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```
+npm install
+# or
+yarn install
+```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+3. Start the development server:
+```
+npm start
+# or
+yarn start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
-## Learn More
+## Usage
 
-To learn more about Next.js, take a look at the following resources:
+1. Select a loan type (mortgage, auto, or personal)
+2. Enter the loan amount and term
+3. Compare the different bank options displayed
+4. Select two or more banks to see a detailed comparison chart
+5. Use the chat assistant for any questions about banking or interest rates
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Technologies Used
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- React.js
+- Tailwind CSS
+- React Hooks
+- Context API for state management
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Acknowledgments
+
+- Design inspired by modern banking applications
+- Financial calculation formulas based on standard amortization methods
