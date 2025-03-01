@@ -11,7 +11,7 @@
   --border: #e2e8f0;
   --input: #e2e8f0;
   --ring: #3b82f6;
-  --primary-rgb: 79, 70, 229; /* This should match your primary color in RGB format */
+  --primary-rgb: 59, 130, 246; /* Updated to match primary color */
 }
 
 body {
@@ -125,6 +125,26 @@ body {
   }
 }
 
+/* Collapsible section animations */
+.collapsible-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.collapsible-content.open {
+  max-height: 1000px; /* Large enough to accommodate content */
+  transition: max-height 0.5s ease-in;
+}
+
+.collapsible-icon {
+  transition: transform 0.3s ease;
+}
+
+.collapsible-icon.open {
+  transform: rotate(180deg);
+}
+
 /* Chat button animation */
 @keyframes slideInFromBottom {
   0% {
@@ -141,17 +161,53 @@ body {
   animation: slideInFromBottom 0.5s ease-out forwards;
 }
 
-/* Add a glow effect to the chat button */
+/* Enhanced glow effect for the chat button */
 .chat-button-glow {
   box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.7);
+  transition: all 0.3s ease;
 }
 
-/* Add a bounce effect when hovering over the chat button */
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
+.chat-button-glow:hover {
+  box-shadow: 0 0 25px rgba(var(--primary-rgb), 0.9);
+  transform: scale(1.05);
+}
+
+/* Improved pulse animation for the chat button */
+@keyframes pulse-slow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.7);
   }
-  50% {
-    transform: translateY(-10px);
+  70% {
+    box-shadow: 0 0 0 15px rgba(var(--primary-rgb), 0);
   }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 2s infinite;
+}
+
+/* Add smooth transitions for the chat window */
+.chat-window-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.chat-window-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.chat-window-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.chat-window-exit-active {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 300ms, transform 300ms;
 } 

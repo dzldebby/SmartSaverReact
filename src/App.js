@@ -29,6 +29,10 @@ function App() {
   const [increasedBalance, setIncreasedBalance] = useState(false);
   const [grewWealth, setGrewWealth] = useState(false);
   
+  // Add new state variables for collapsible sections
+  const [isBasicRequirementsOpen, setIsBasicRequirementsOpen] = useState(true);
+  const [isAdvancedRequirementsOpen, setIsAdvancedRequirementsOpen] = useState(false);
+  
   // Sample bank data wrapped in useMemo based on SmartSaver structure
   const banks = useMemo(() => [
     {
@@ -987,6 +991,10 @@ function App() {
     
     setCalculationResults(results);
     setHasCalculated(true);
+    
+    // Collapse both sections after calculation
+    setIsBasicRequirementsOpen(false);
+    setIsAdvancedRequirementsOpen(false);
   };
   
   // Get comparison results for selected banks
@@ -1032,193 +1040,241 @@ function App() {
           <div className="mb-6">
             <h2 className="text-xl font-semibold mb-4">Step 2: Enter Your Banking Details</h2>
             
-            <div className="border p-4 rounded-lg mb-4">
-              <h3 className="font-medium mb-3">Basic Requirements</h3>
+            {/* Basic Requirements - Collapsible */}
+            <div className="border rounded-lg mb-4 overflow-hidden">
+              <button 
+                onClick={() => setIsBasicRequirementsOpen(!isBasicRequirementsOpen)}
+                className="w-full p-4 text-left font-medium flex justify-between items-center bg-gray-50 hover:bg-gray-100 transition-colors"
+              >
+                <span>Basic Requirements</span>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="20" 
+                  height="20" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  className={`collapsible-icon ${isBasicRequirementsOpen ? 'open' : ''}`}
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
               
-              <div className="mb-3">
-                <div className="flex items-center mb-2">
-                  <input
-                    type="checkbox"
-                    id="has-salary"
-                    checked={hasSalary}
-                    onChange={(e) => setHasSalary(e.target.checked)}
-                    className="mr-2"
-                  />
-                  <label htmlFor="has-salary" className="text-sm font-medium">
-                    Credit Salary to Bank Account
-                  </label>
-                </div>
-                
-                {hasSalary && (
-                  <div className="ml-6 mb-2">
-                    <label className="block text-sm mb-1">
-                      Monthly Salary Amount ($)
-                    </label>
-                    <input
-                      type="number"
-                      value={salaryAmount}
-                      onChange={(e) => setSalaryAmount(Number(e.target.value))}
-                      className="w-full p-2 border rounded"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Selected Salary Amount: ${formatNumber(salaryAmount)}
-                    </p>
+              <div className={`collapsible-content ${isBasicRequirementsOpen ? 'open' : ''}`}>
+                <div className="p-4">
+                  <div className="mb-3">
+                    <div className="flex items-center mb-2">
+                      <input
+                        type="checkbox"
+                        id="has-salary"
+                        checked={hasSalary}
+                        onChange={(e) => setHasSalary(e.target.checked)}
+                        className="mr-2"
+                      />
+                      <label htmlFor="has-salary" className="text-sm font-medium">
+                        Credit Salary to Bank Account
+                      </label>
+                    </div>
+                    
+                    {hasSalary && (
+                      <div className="ml-6 mb-2">
+                        <label className="block text-sm mb-1">
+                          Monthly Salary Amount ($)
+                        </label>
+                        <input
+                          type="number"
+                          value={salaryAmount}
+                          onChange={(e) => setSalaryAmount(Number(e.target.value))}
+                          className="w-full p-2 border rounded"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Selected Salary Amount: ${formatNumber(salaryAmount)}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Card Spend per Month ($)
-                  </label>
-                  <input
-                    type="number"
-                    value={cardSpend}
-                    onChange={(e) => setCardSpend(Number(e.target.value))}
-                    className="w-full p-2 border rounded"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Selected Card Spend: ${formatNumber(cardSpend)}
-                  </p>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Number of Bill Payments / GIRO
-                  </label>
-                  <input
-                    type="number"
-                    value={giroCount}
-                    onChange={(e) => setGiroCount(Number(e.target.value))}
-                    min="0"
-                    max="10"
-                    className="w-full p-2 border rounded"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Selected Bill Payments: {giroCount}
-                  </p>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Card Spend per Month ($)
+                      </label>
+                      <input
+                        type="number"
+                        value={cardSpend}
+                        onChange={(e) => setCardSpend(Number(e.target.value))}
+                        className="w-full p-2 border rounded"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Selected Card Spend: ${formatNumber(cardSpend)}
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Number of Bill Payments / GIRO
+                      </label>
+                      <input
+                        type="number"
+                        value={giroCount}
+                        onChange={(e) => setGiroCount(Number(e.target.value))}
+                        min="0"
+                        max="10"
+                        className="w-full p-2 border rounded"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Selected Bill Payments: {giroCount}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
             
-            <div className="border p-4 rounded-lg">
-              <h3 className="font-medium mb-3">Advanced Requirements (Optional)</h3>
+            {/* Advanced Requirements - Collapsible and closed by default */}
+            <div className="border rounded-lg overflow-hidden">
+              <button 
+                onClick={() => setIsAdvancedRequirementsOpen(!isAdvancedRequirementsOpen)}
+                className="w-full p-4 text-left font-medium flex justify-between items-center bg-gray-50 hover:bg-gray-100 transition-colors"
+              >
+                <span>Advanced Requirements (Optional)</span>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="20" 
+                  height="20" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  className={`collapsible-icon ${isAdvancedRequirementsOpen ? 'open' : ''}`}
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
               
-              <div className="mb-3">
-                <div className="flex items-center mb-2">
-                  <input
-                    type="checkbox"
-                    id="has-insurance"
-                    checked={hasInsurance}
-                    onChange={(e) => setHasInsurance(e.target.checked)}
-                    className="mr-2"
-                  />
-                  <label htmlFor="has-insurance" className="text-sm font-medium">
-                    Have Insurance Products
-                  </label>
-                </div>
-                
-                {hasInsurance && (
-                  <div className="ml-6 mb-2">
-                    <label className="block text-sm mb-1">
-                      Monthly Insurance Premium Amount ($)
-                    </label>
-                    <input
-                      type="number"
-                      value={insuranceAmount}
-                      onChange={(e) => setInsuranceAmount(Number(e.target.value))}
-                      className="w-full p-2 border rounded"
-                    />
+              <div className={`collapsible-content ${isAdvancedRequirementsOpen ? 'open' : ''}`}>
+                <div className="p-4">
+                  <div className="mb-3">
+                    <div className="flex items-center mb-2">
+                      <input
+                        type="checkbox"
+                        id="has-insurance"
+                        checked={hasInsurance}
+                        onChange={(e) => setHasInsurance(e.target.checked)}
+                        className="mr-2"
+                      />
+                      <label htmlFor="has-insurance" className="text-sm font-medium">
+                        Have Insurance Products
+                      </label>
+                    </div>
+                    
+                    {hasInsurance && (
+                      <div className="ml-6 mb-2">
+                        <label className="block text-sm mb-1">
+                          Monthly Insurance Premium Amount ($)
+                        </label>
+                        <input
+                          type="number"
+                          value={insuranceAmount}
+                          onChange={(e) => setInsuranceAmount(Number(e.target.value))}
+                          className="w-full p-2 border rounded"
+                        />
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              
-              <div className="mb-3">
-                <div className="flex items-center mb-2">
-                  <input
-                    type="checkbox"
-                    id="has-investments"
-                    checked={hasInvestments}
-                    onChange={(e) => setHasInvestments(e.target.checked)}
-                    className="mr-2"
-                  />
-                  <label htmlFor="has-investments" className="text-sm font-medium">
-                    Have Investments
-                  </label>
-                </div>
-                
-                {hasInvestments && (
-                  <div className="ml-6 mb-2">
-                    <label className="block text-sm mb-1">
-                      Monthly Investment Amount ($)
-                    </label>
-                    <input
-                      type="number"
-                      value={investmentAmount}
-                      onChange={(e) => setInvestmentAmount(Number(e.target.value))}
-                      className="w-full p-2 border rounded"
-                    />
+                  
+                  <div className="mb-3">
+                    <div className="flex items-center mb-2">
+                      <input
+                        type="checkbox"
+                        id="has-investments"
+                        checked={hasInvestments}
+                        onChange={(e) => setHasInvestments(e.target.checked)}
+                        className="mr-2"
+                      />
+                      <label htmlFor="has-investments" className="text-sm font-medium">
+                        Have Investments
+                      </label>
+                    </div>
+                    
+                    {hasInvestments && (
+                      <div className="ml-6 mb-2">
+                        <label className="block text-sm mb-1">
+                          Monthly Investment Amount ($)
+                        </label>
+                        <input
+                          type="number"
+                          value={investmentAmount}
+                          onChange={(e) => setInvestmentAmount(Number(e.target.value))}
+                          className="w-full p-2 border rounded"
+                        />
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              
-              <div className="mb-3">
-                <div className="flex items-center mb-2">
-                  <input
-                    type="checkbox"
-                    id="has-home-loan"
-                    checked={hasHomeLoan}
-                    onChange={(e) => setHasHomeLoan(e.target.checked)}
-                    className="mr-2"
-                  />
-                  <label htmlFor="has-home-loan" className="text-sm font-medium">
-                    Have Home Loan
-                  </label>
-                </div>
-                
-                {hasHomeLoan && (
-                  <div className="ml-6 mb-2">
-                    <label className="block text-sm mb-1">
-                      Monthly Home Loan Installment Amount ($)
-                    </label>
-                    <input
-                      type="number"
-                      value={homeLoanAmount}
-                      onChange={(e) => setHomeLoanAmount(Number(e.target.value))}
-                      className="w-full p-2 border rounded"
-                    />
+                  
+                  <div className="mb-3">
+                    <div className="flex items-center mb-2">
+                      <input
+                        type="checkbox"
+                        id="has-home-loan"
+                        checked={hasHomeLoan}
+                        onChange={(e) => setHasHomeLoan(e.target.checked)}
+                        className="mr-2"
+                      />
+                      <label htmlFor="has-home-loan" className="text-sm font-medium">
+                        Have Home Loan
+                      </label>
+                    </div>
+                    
+                    {hasHomeLoan && (
+                      <div className="ml-6 mb-2">
+                        <label className="block text-sm mb-1">
+                          Monthly Home Loan Installment Amount ($)
+                        </label>
+                        <input
+                          type="number"
+                          value={homeLoanAmount}
+                          onChange={(e) => setHomeLoanAmount(Number(e.target.value))}
+                          className="w-full p-2 border rounded"
+                        />
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              
-              <div className="mb-3">
-                <div className="flex items-center mb-2">
-                  <input
-                    type="checkbox"
-                    id="increased-balance"
-                    checked={increasedBalance}
-                    onChange={(e) => setIncreasedBalance(e.target.checked)}
-                    className="mr-2"
-                  />
-                  <label htmlFor="increased-balance" className="text-sm font-medium">
-                    [OCBC-Specific] Increased Account Balance
-                  </label>
-                </div>
-              </div>
-              
-              <div className="mb-3">
-                <div className="flex items-center mb-2">
-                  <input
-                    type="checkbox"
-                    id="grew-wealth"
-                    checked={grewWealth}
-                    onChange={(e) => setGrewWealth(e.target.checked)}
-                    className="mr-2"
-                  />
-                  <label htmlFor="grew-wealth" className="text-sm font-medium">
-                    [OCBC-Specific] Grew Wealth
-                  </label>
+                  
+                  <div className="mb-3">
+                    <div className="flex items-center mb-2">
+                      <input
+                        type="checkbox"
+                        id="increased-balance"
+                        checked={increasedBalance}
+                        onChange={(e) => setIncreasedBalance(e.target.checked)}
+                        className="mr-2"
+                      />
+                      <label htmlFor="increased-balance" className="text-sm font-medium">
+                        [OCBC-Specific] Increased Account Balance
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-3">
+                    <div className="flex items-center mb-2">
+                      <input
+                        type="checkbox"
+                        id="grew-wealth"
+                        checked={grewWealth}
+                        onChange={(e) => setGrewWealth(e.target.checked)}
+                        className="mr-2"
+                      />
+                      <label htmlFor="grew-wealth" className="text-sm font-medium">
+                        [OCBC-Specific] Grew Wealth
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

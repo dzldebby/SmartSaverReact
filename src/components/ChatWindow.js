@@ -43,6 +43,7 @@ const ChatWindow = ({
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState(null);
   const messagesEndRef = useRef(null);
+  const chatWindowRef = useRef(null);
   
   // Scroll to bottom of messages when new ones are added
   useEffect(() => {
@@ -50,6 +51,29 @@ const ChatWindow = ({
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
+  
+  // Add click outside listener to close chat
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isOpen && chatWindowRef.current && !chatWindowRef.current.contains(event.target)) {
+        // Check if the click is not on the chat button (which has a class 'chat-button-enter')
+        const chatButton = document.querySelector('.chat-button-enter');
+        if (!chatButton || !chatButton.contains(event.target)) {
+          onClose();
+        }
+      }
+    };
+
+    // Add event listener when chat is open
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    // Clean up the event listener
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
   
   // Regenerate welcome message when calculation results change
   useEffect(() => {
@@ -154,11 +178,19 @@ const ChatWindow = ({
   if (!isOpen) return null;
   
   return (
-    <div className="fixed bottom-6 right-6 w-80 sm:w-96 h-[500px] bg-white rounded-lg shadow-xl flex flex-col border border-gray-200 transition-all z-50">
+    <div 
+      ref={chatWindowRef}
+      className="fixed bottom-6 right-6 w-80 sm:w-96 h-[500px] bg-white rounded-lg shadow-xl flex flex-col border border-gray-200 transition-all z-50"
+    >
       {/* Header */}
       <div className="p-4 border-b flex justify-between items-center bg-primary text-white rounded-t-lg">
         <h3 className="font-medium">SmartSaver Assistant</h3>
-        <button onClick={onClose} className="text-white hover:text-gray-200">
+        <button 
+          onClick={onClose} 
+          className="text-white hover:text-gray-200 hover:bg-primary-dark p-1 rounded-full transition-colors"
+          aria-label="Close chat"
+          title="Close chat"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
