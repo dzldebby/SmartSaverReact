@@ -11,6 +11,7 @@
   --border: #e2e8f0;
   --input: #e2e8f0;
   --ring: #3b82f6;
+  --primary-rgb: 79, 70, 229; /* This should match your primary color in RGB format */
 }
 
 body {
@@ -127,7 +128,7 @@ body {
 /* Chat button animation */
 @keyframes slideInFromBottom {
   0% {
-    transform: translateY(20px);
+    transform: translateY(100px);
     opacity: 0;
   }
   100% {
@@ -138,4 +139,19 @@ body {
 
 .chat-button-enter {
   animation: slideInFromBottom 0.5s ease-out forwards;
+}
+
+/* Add a glow effect to the chat button */
+.chat-button-glow {
+  box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.7);
+}
+
+/* Add a bounce effect when hovering over the chat button */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 } 
