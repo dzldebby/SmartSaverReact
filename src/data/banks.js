@@ -1,22 +1,85 @@
 import { Bank } from '@/types';
 
+// Manually extract features from the interest rates data
+// This is a simplified approach since we can't directly import CSV in the browser
+// In a real application, you would fetch this data from an API or use a build-time process
+const extractFeaturesFromInterestRates = () => {
+  // Map of bank names to their features
+  const bankFeatures = {
+    'UOB One': [
+      'Up to 6.00% p.a. interest on your savings',
+      'Bonus interest with salary crediting',
+      'Card spend bonus with minimum $500 spend',
+      'GIRO payment bonus available'
+    ],
+    'OCBC 360': [
+      'Up to 4.00% p.a. interest on your savings',
+      'Bonus interest with salary crediting of $1800',
+      'Card spend bonus with minimum $500 spend',
+      'Insurance and investment bonuses available'
+    ],
+    'SC BonusSaver': [
+      'Up to 2.00% p.a. interest on your savings',
+      'Regular salary credit at least $3000',
+      'Card spend at least $1000',
+      'Insurance purchase and investment bonuses'
+    ],
+    'DBS Multiplier': [
+      'Up to 4.10% p.a. interest on your savings',
+      'Bonus interest based on transaction categories',
+      'First $50,000 at 1.80% with 1 category',
+      'Higher rates with more transaction categories'
+    ],
+    'BOC SmartSaver': [
+      'Up to 2.50% p.a. interest on your savings',
+      'Salary credit >= $2000',
+      'Card spend bonuses at different tiers',
+      'Bill payment bonuses available'
+    ],
+    'CIMB FastSaver': [
+      'Up to 2.00% p.a. interest on your savings',
+      'No fall-below fees',
+      'Free online transfers',
+      'Tiered interest rates based on balance'
+    ],
+    'Maybank SaveUp': [
+      'Up to 3.00% p.a. interest on your savings',
+      'Multiple product categories for bonus',
+      'Low initial deposit requirement',
+      'Bonus interest with salary crediting'
+    ],
+    'HSBC Everyday Global': [
+      'Up to 2.50% p.a. interest on your savings',
+      'Multi-currency capabilities',
+      'No monthly service fee',
+      'Bonus interest with salary crediting'
+    ]
+  };
+  
+  return bankFeatures;
+};
+
+// Get features for banks
+const bankFeatures = extractFeaturesFromInterestRates();
+
 export const banks = [
   {
     id: 'dbs-multiplier',
     name: 'DBS Multiplier',
     logo: '/placeholder.svg',
     color: '#E31837',
-    baseRate: 0.005, // 0.5%
-    maxRate: 0.04,   // 4.0%
-    savingsRate: 0.04, // 4.0%
+    baseRate: 0.0005, // 0.05%
+    maxRate: 0.041,   // 4.1%
+    savingsRate: 0.041, // 4.1%
     mortgageRate: 6.75,
     personalLoanRate: 11.99,
     carLoanRate: 5.49,
     creditCardRate: 19.24,
-    features: [
-      'Up to 4.0% interest on savings',
-      'No minimum balance fee',
-      'Free digital transfers'
+    features: bankFeatures['DBS Multiplier'] || [
+      'Up to 4.1% interest on savings',
+      'Bonus interest based on transaction categories',
+      'First $50,000 at 1.80% with 1 category',
+      'Higher rates with more transaction categories'
     ],
     requirements: {
       salary: true,
@@ -26,21 +89,32 @@ export const banks = [
       loan: true
     },
     tiers: [
-      { 
-        threshold: 2000, 
-        rates: [0.02, 0.025, 0.03] // 1, 2, 3+ categories
+      {
+        category: 1,
+        thresholds: [
+          { min: 500, max: 15000, rate: 0.018 }, // 1.80% for $500-$15k transactions
+          { min: 15000, max: 30000, rate: 0.019 }, // 1.90% for $15k-$30k transactions
+          { min: 30000, max: Infinity, rate: 0.022 } // 2.20% for >$30k transactions
+        ],
+        cap: 50000 // Cap for bonus interest
       },
-      { 
-        threshold: 5000, 
-        rates: [0.025, 0.03, 0.035] 
+      {
+        category: 2,
+        thresholds: [
+          { min: 500, max: 15000, rate: 0.021 }, // 2.10% for $500-$15k transactions
+          { min: 15000, max: 30000, rate: 0.022 }, // 2.20% for $15k-$30k transactions
+          { min: 30000, max: Infinity, rate: 0.03 } // 3.00% for >$30k transactions
+        ],
+        cap: 100000 // Cap for bonus interest
       },
-      { 
-        threshold: 15000, 
-        rates: [0.03, 0.035, 0.04] 
-      },
-      { 
-        threshold: 30000, 
-        rates: [0.035, 0.04, 0.045] 
+      {
+        category: 3,
+        thresholds: [
+          { min: 500, max: 15000, rate: 0.024 }, // 2.40% for $500-$15k transactions
+          { min: 15000, max: 30000, rate: 0.025 }, // 2.50% for $15k-$30k transactions
+          { min: 30000, max: Infinity, rate: 0.041 } // 4.10% for >$30k transactions
+        ],
+        cap: 100000 // Cap for bonus interest
       }
     ]
   },
@@ -56,7 +130,7 @@ export const banks = [
     personalLoanRate: 10.99,
     carLoanRate: 5.59,
     creditCardRate: 18.99,
-    features: [
+    features: bankFeatures['OCBC 360'] || [
       'Up to 4.5% interest on savings',
       'Bonus interest with salary crediting',
       'Integrated investment options'
@@ -87,7 +161,7 @@ export const banks = [
     personalLoanRate: 11.79,
     carLoanRate: 5.24,
     creditCardRate: 19.99,
-    features: [
+    features: bankFeatures['UOB One'] || [
       'Up to 3.8% interest on savings',
       'Rebates on credit card spending',
       'No minimum balance requirement'
@@ -116,7 +190,7 @@ export const banks = [
     personalLoanRate: 11.49,
     carLoanRate: 5.75,
     creditCardRate: 18.49,
-    features: [
+    features: bankFeatures['SC BonusSaver'] || [
       'Up to 3.55% interest on savings',
       'Multiple bonus interest categories',
       'Integrated with SC credit cards'
@@ -147,7 +221,7 @@ export const banks = [
     personalLoanRate: 9.99,
     carLoanRate: 5.19,
     creditCardRate: 17.49,
-    features: [
+    features: bankFeatures['CIMB FastSaver'] || [
       'Up to 2.0% interest on savings',
       'No fall-below fees',
       'Free online transfers'
@@ -176,7 +250,7 @@ export const banks = [
     personalLoanRate: 9.49,
     carLoanRate: 4.85,
     creditCardRate: 17.99,
-    features: [
+    features: bankFeatures['Maybank SaveUp'] || [
       'Up to 3.0% interest on savings',
       'Multiple product categories for bonus',
       'Low initial deposit requirement'
@@ -201,6 +275,11 @@ export const banks = [
     name: 'HSBC Everyday Global',
     baseRate: 0.001, // 0.1%
     maxRate: 0.025,  // 2.5%
+    features: bankFeatures['HSBC Everyday Global'] || [
+      'Up to 2.5% interest on savings',
+      'Multi-currency capabilities',
+      'No monthly service fee'
+    ],
     requirements: {
       salary: true,
       spending: true,
