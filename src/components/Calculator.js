@@ -243,7 +243,10 @@ const Calculator = ({
                   <Checkbox
                     id="has-insurance"
                     checked={hasInsurance}
-                    onCheckedChange={setHasInsurance}
+                    onCheckedChange={(checked) => {
+                      console.log("Insurance checkbox changed to:", checked);
+                      setHasInsurance(checked);
+                    }}
                   />
                   <Label htmlFor="has-insurance" className="font-medium">
                     Have Insurance Products
@@ -368,6 +371,21 @@ const Calculator = ({
         <Button 
           onClick={() => {
             console.log("Calculate button clicked");
+            console.log("Current state before calculation:", {
+              depositAmount,
+              hasSalary,
+              salaryAmount,
+              cardSpend,
+              giroCount,
+              hasInsurance,
+              insuranceAmount,
+              hasInvestments,
+              investmentAmount,
+              hasHomeLoan,
+              homeLoanAmount,
+              increasedBalance,
+              grewWealth
+            });
             setIsCalculating(true);
             // Add a small delay to allow the UI to update
             setTimeout(() => {

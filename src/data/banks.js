@@ -35,7 +35,8 @@ const extractFeaturesFromInterestRates = () => {
       'Up to 2.50% p.a. interest on your savings',
       'Salary credit >= $2000',
       'Card spend bonuses at different tiers',
-      'Bill payment bonuses available'
+      'Bill payment bonuses available',
+      '2.40% Wealth Bonus with insurance products'
     ],
     'Chocolate': [
       'Up to 3.3% p.a. interest on your savings',
@@ -342,7 +343,13 @@ export const banks = [
     personalLoanRate: 10.88,
     carLoanRate: 5.38,
     creditCardRate: 18.88,
-    features: bankFeatures['BOC SmartSaver'],
+    features: bankFeatures['BOC SmartSaver'] || [
+      'Up to 2.50% p.a. interest on your savings',
+      'Salary credit >= $2000',
+      'Card spend bonuses at different tiers',
+      'Bill payment bonuses available',
+      '2.40% Wealth Bonus with insurance products'
+    ],
     requirements: {
       salary: true,
       spending: true,
