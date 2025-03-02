@@ -1,10 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Textarea } from '../components/ui/textarea';
-import { Avatar } from '../components/ui/avatar';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, Button, Textarea, Avatar } from '../components/ui';
 import { useToast } from '../components/ToastProvider';
 
 const ChatBot = () => {
