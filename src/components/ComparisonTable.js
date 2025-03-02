@@ -91,10 +91,10 @@ const ComparisonTable = ({ results, getBankById }) => {
                         </span>
                       </td>
                       <td className="text-right font-medium">
-                        ${result.monthlyInterest.toFixed(2)}
+                        ${result.monthlyInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td className="text-right font-medium">
-                        <span className="text-lg">${result.annualInterest.toFixed(2)}</span>
+                        <span className="text-lg">${result.annualInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </td>
                       <td>
                         <button 
@@ -114,8 +114,8 @@ const ComparisonTable = ({ results, getBankById }) => {
                               <div className="text-center py-3">
                                 <p className="text-gray-500 dark:text-gray-400">Detailed breakdown not available for this bank.</p>
                                 <div className="mt-2 p-2 bg-white/50 dark:bg-gray-800/50 rounded-lg">
-                                  <p className="font-medium">Total Annual Interest: <span className="text-primary font-bold">${result.annualInterest.toFixed(2)}</span></p>
-                                  <p className="text-sm">Monthly Interest: ${result.monthlyInterest.toFixed(2)}</p>
+                                  <p className="font-medium">Total Annual Interest: <span className="text-primary font-bold">${result.annualInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p>
+                                  <p className="text-sm">Monthly Interest: ${result.monthlyInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                 </div>
                               </div>
                             ) : (
@@ -130,13 +130,13 @@ const ComparisonTable = ({ results, getBankById }) => {
                                           <span>{item.description.replace('Base Interest', '').trim() || 'Base'}: 
                                             <span className="ml-1 text-gray-600 dark:text-gray-400">${item.amountInTier.toLocaleString()} at {(item.tierRate * 100).toFixed(2)}%</span>
                                           </span>
-                                          <span className="font-medium">${item.tierInterest.toFixed(2)}</span>
+                                          <span className="font-medium">${item.tierInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                         </li>
                                       ))}
                                     </ul>
                                     <div className="flex justify-between font-medium mt-2 pt-1 border-t border-gray-200 dark:border-gray-700">
                                       <span>Total Base Interest:</span>
-                                      <span className="text-primary">${groupedBreakdown['Base Interest'].subtotal.toFixed(2)}</span>
+                                      <span className="text-primary">${groupedBreakdown['Base Interest'].subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                   </div>
                                 )}
@@ -151,13 +151,13 @@ const ComparisonTable = ({ results, getBankById }) => {
                                           <span>{item.description}: 
                                             <span className="ml-1 text-gray-600 dark:text-gray-400">${item.amountInTier.toLocaleString()} at {(item.tierRate * 100).toFixed(2)}%</span>
                                           </span>
-                                          <span className="font-medium">${item.tierInterest.toFixed(2)}</span>
+                                          <span className="font-medium">${item.tierInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                         </li>
                                       ))}
                                     </ul>
                                     <div className="flex justify-between font-medium mt-2 pt-1 border-t border-gray-200 dark:border-gray-700">
                                       <span>Total Bonus Interest:</span>
-                                      <span className="text-secondary">${groupedBreakdown['Bonus Interest'].subtotal.toFixed(2)}</span>
+                                      <span className="text-secondary">${groupedBreakdown['Bonus Interest'].subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                   </div>
                                 )}
@@ -172,13 +172,13 @@ const ComparisonTable = ({ results, getBankById }) => {
                                           <span>{item.description}: 
                                             <span className="ml-1 text-gray-600 dark:text-gray-400">${item.amountInTier.toLocaleString()} at {(item.tierRate * 100).toFixed(2)}%</span>
                                           </span>
-                                          <span className="font-medium">${item.tierInterest.toFixed(2)}</span>
+                                          <span className="font-medium">${item.tierInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                         </li>
                                       ))}
                                     </ul>
                                     <div className="flex justify-between font-medium mt-2 pt-1 border-t border-gray-200 dark:border-gray-700">
                                       <span>Total Extra Interest:</span>
-                                      <span className="text-accent">${groupedBreakdown['Extra Interest'].subtotal.toFixed(2)}</span>
+                                      <span className="text-accent">${groupedBreakdown['Extra Interest'].subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                   </div>
                                 )}
@@ -193,13 +193,13 @@ const ComparisonTable = ({ results, getBankById }) => {
                                           <span>{item.description}: 
                                             <span className="ml-1 text-gray-600 dark:text-gray-400">${item.amountInTier.toLocaleString()} at {(item.tierRate * 100).toFixed(2)}%</span>
                                           </span>
-                                          <span className="font-medium">${item.tierInterest.toFixed(2)}</span>
+                                          <span className="font-medium">${item.tierInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                         </li>
                                       ))}
                                     </ul>
                                     <div className="flex justify-between font-medium mt-2 pt-1 border-t border-gray-200 dark:border-gray-700">
                                       <span>Total Other Interest:</span>
-                                      <span className="text-gray-700 dark:text-gray-300">${groupedBreakdown['Other'].subtotal.toFixed(2)}</span>
+                                      <span className="text-gray-700 dark:text-gray-300">${groupedBreakdown['Other'].subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                   </div>
                                 )}
@@ -209,11 +209,11 @@ const ComparisonTable = ({ results, getBankById }) => {
                                   <div className="fancy-border-content p-3">
                                     <div className="flex justify-between font-bold">
                                       <span>Total Annual Interest:</span>
-                                      <span className="text-primary">${groupedBreakdown.total.toFixed(2)}</span>
+                                      <span className="text-primary">${groupedBreakdown.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                     <div className="flex justify-between text-sm mt-1">
                                       <span>Monthly Interest:</span>
-                                      <span>${(groupedBreakdown.total / 12).toFixed(2)}</span>
+                                      <span>${(groupedBreakdown.total / 12).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                   </div>
                                 </div>

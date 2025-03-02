@@ -661,58 +661,35 @@ function calculateChocolate(depositAmount, bankInfo, bankRequirements, addTier) 
   let explanation = '';
   const breakdown = [];
   
-  // Base interest rate
-  const baseRate = bankInfo.baseRate || 0.001; // Default to 0.10%
-  
-  // Add base interest
-  const baseInterest = depositAmount * baseRate;
-  totalInterest += baseInterest;
+  // First tier: 3.6% for first $20,000
+  const firstTierRate = 0.036; // 3.6%
+  const firstTierCap = 20000;
+  const firstTierAmount = Math.min(depositAmount, firstTierCap);
+  const firstTierInterest = firstTierAmount * firstTierRate;
+  totalInterest += firstTierInterest;
   
   breakdown.push({
-    amountInTier: parseFloat(depositAmount),
-    tierRate: parseFloat(baseRate),
-    tierInterest: baseInterest,
-    monthlyInterest: baseInterest / 12,
-    description: "Base Interest"
+    amountInTier: parseFloat(firstTierAmount),
+    tierRate: parseFloat(firstTierRate),
+    tierInterest: firstTierInterest,
+    monthlyInterest: firstTierInterest / 12,
+    description: "First $20,000 at 3.6%"
   });
   
-  // Check for salary credit
-  if (bankRequirements.hasSalary && bankRequirements.salaryAmount >= 1500) {
-    // Determine the bonus rate based on salary amount
-    let bonusRate = 0.01; // Default 1.00% bonus
-    
-    if (bankRequirements.salaryAmount >= 5000) {
-      bonusRate = 0.02; // 2.00% bonus for salary >= $5,000
-    } else if (bankRequirements.salaryAmount >= 2500) {
-      bonusRate = 0.015; // 1.50% bonus for salary >= $2,500
-    }
-    
-    const eligibleAmount = Math.min(depositAmount, 100000); // Cap at $100,000
-    const bonusInterest = eligibleAmount * bonusRate;
-    totalInterest += bonusInterest;
+  // Second tier: 3.3% for next $30,000
+  if (depositAmount > firstTierCap) {
+    const secondTierRate = 0.033; // 3.3%
+    const secondTierCap = 30000;
+    const secondTierAmount = Math.min(depositAmount - firstTierCap, secondTierCap);
+    const secondTierInterest = secondTierAmount * secondTierRate;
+    totalInterest += secondTierInterest;
     
     breakdown.push({
-      amountInTier: parseFloat(eligibleAmount),
-      tierRate: parseFloat(bonusRate),
-      tierInterest: bonusInterest,
-      monthlyInterest: bonusInterest / 12,
-      description: `Salary Credit Bonus (>= $${bankRequirements.salaryAmount.toLocaleString()})`
-    });
-  }
-  
-  // Check for spending
-  if (bankRequirements.spendAmount >= 500) {
-    const bonusRate = 0.005; // 0.50% bonus
-    const eligibleAmount = Math.min(depositAmount, 100000); // Cap at $100,000
-    const bonusInterest = eligibleAmount * bonusRate;
-    totalInterest += bonusInterest;
-    
-    breakdown.push({
-      amountInTier: parseFloat(eligibleAmount),
-      tierRate: parseFloat(bonusRate),
-      tierInterest: bonusInterest,
-      monthlyInterest: bonusInterest / 12,
-      description: "Card Spend Bonus (>= $500)"
+      amountInTier: parseFloat(secondTierAmount),
+      tierRate: parseFloat(secondTierRate),
+      tierInterest: secondTierInterest,
+      monthlyInterest: secondTierInterest / 12,
+      description: "Next $30,000 at 3.3%"
     });
   }
   
