@@ -661,8 +661,8 @@ function calculateChocolate(depositAmount, bankInfo, bankRequirements, addTier) 
   let explanation = '';
   const breakdown = [];
   
-  // First tier: 3.6% for first $20,000
-  const firstTierRate = 0.036; // 3.6%
+  // First tier: 3.3% for first $20,000
+  const firstTierRate = 0.033; // 3.3%
   const firstTierCap = 20000;
   const firstTierAmount = Math.min(depositAmount, firstTierCap);
   const firstTierInterest = firstTierAmount * firstTierRate;
@@ -673,12 +673,12 @@ function calculateChocolate(depositAmount, bankInfo, bankRequirements, addTier) 
     tierRate: parseFloat(firstTierRate),
     tierInterest: firstTierInterest,
     monthlyInterest: firstTierInterest / 12,
-    description: "First $20,000 at 3.6%"
+    description: "First $20,000 at 3.3%"
   });
   
-  // Second tier: 3.3% for next $30,000
+  // Second tier: 3.0% for next $30,000
   if (depositAmount > firstTierCap) {
-    const secondTierRate = 0.033; // 3.3%
+    const secondTierRate = 0.03; // 3.0%
     const secondTierCap = 30000;
     const secondTierAmount = Math.min(depositAmount - firstTierCap, secondTierCap);
     const secondTierInterest = secondTierAmount * secondTierRate;
@@ -689,7 +689,22 @@ function calculateChocolate(depositAmount, bankInfo, bankRequirements, addTier) 
       tierRate: parseFloat(secondTierRate),
       tierInterest: secondTierInterest,
       monthlyInterest: secondTierInterest / 12,
-      description: "Next $30,000 at 3.3%"
+      description: "Next $30,000 at 3.0%"
+    });
+  }
+  
+  // Third tier: 0% for amount beyond $50,000
+  if (depositAmount > 50000) {
+    const thirdTierRate = 0.0; // 0.0%
+    const thirdTierAmount = depositAmount - 50000;
+    const thirdTierInterest = thirdTierAmount * thirdTierRate; // Will be 0
+    
+    breakdown.push({
+      amountInTier: parseFloat(thirdTierAmount),
+      tierRate: parseFloat(thirdTierRate),
+      tierInterest: thirdTierInterest,
+      monthlyInterest: thirdTierInterest / 12,
+      description: "Amount beyond $50,000 at 0.0%"
     });
   }
   
@@ -697,7 +712,7 @@ function calculateChocolate(depositAmount, bankInfo, bankRequirements, addTier) 
   const interestRate = totalInterest / depositAmount;
   
   // Generate explanation
-  explanation = `Chocolate account with $${depositAmount.toLocaleString()} deposit.`;
+  explanation = `Chocolate account with $${depositAmount.toLocaleString()} deposit. Interest is earned on the first $50,000 only.`;
   
   console.log("Chocolate breakdown:", breakdown);
   
@@ -720,7 +735,7 @@ function calculateDBSMultiplier(depositAmount, bankInfo, bankRequirements, addTi
   const breakdown = [];
   
   // Base interest rate
-  const baseRate = bankInfo.baseRate || 0.001; // Default to 0.10%
+  const baseRate = bankInfo.baseRate || 0.0005; // Default to 0.05%
   const baseInterest = depositAmount * baseRate;
   totalInterest += baseInterest;
   
@@ -732,44 +747,43 @@ function calculateDBSMultiplier(depositAmount, bankInfo, bankRequirements, addTi
     description: "Base Interest"
   });
   
-  // Count qualifying categories
-  let categoryCount = 0;
-  let totalTransactionAmount = 0;
-  
-  // Check salary
+  // Only proceed with bonus interest calculation if salary is credited
   if (bankRequirements.hasSalary) {
+    // Count qualifying categories
+    let categoryCount = 0;
+    let totalTransactionAmount = 0;
+    
+    // Salary is already credited
     categoryCount++;
     totalTransactionAmount += bankRequirements.salaryAmount || 0;
-  }
-  
-  // Check spending
-  if (bankRequirements.spendAmount >= 500) {
-    categoryCount++;
-    totalTransactionAmount += bankRequirements.spendAmount || 0;
-  }
-  
-  // Check investments
-  if (bankRequirements.hasInvestments) {
-    categoryCount++;
-    totalTransactionAmount += bankRequirements.investmentAmount || 0;
-  }
-  
-  // Check insurance
-  if (bankRequirements.hasInsurance) {
-    categoryCount++;
-    totalTransactionAmount += bankRequirements.insuranceAmount || 0;
-  }
-  
-  // Check home loan
-  if (bankRequirements.hasHomeLoan) {
-    categoryCount++;
-    totalTransactionAmount += bankRequirements.homeLoanAmount || 0;
-  }
-  
-  // Apply bonus interest based on category count and transaction amount
-  let bonusRate = 0;
-  
-  if (categoryCount >= 1) {
+
+    // Check spending
+    if (bankRequirements.spendAmount >= 500) {
+      categoryCount++;
+      totalTransactionAmount += bankRequirements.spendAmount || 0;
+    }
+
+    // Check investments
+    if (bankRequirements.hasInvestments) {
+      categoryCount++;
+      totalTransactionAmount += bankRequirements.investmentAmount || 0;
+    }
+
+    // Check insurance
+    if (bankRequirements.hasInsurance) {
+      categoryCount++;
+      totalTransactionAmount += bankRequirements.insuranceAmount || 0;
+    }
+
+    // Check home loan
+    if (bankRequirements.hasHomeLoan) {
+      categoryCount++;
+      totalTransactionAmount += bankRequirements.homeLoanAmount || 0;
+    }
+
+    // Apply bonus interest based on category count and transaction amount
+    let bonusRate = 0;
+
     // Determine bonus rate based on total transaction amount and category count
     if (totalTransactionAmount >= 30000) {
       if (categoryCount >= 3) {
@@ -802,11 +816,11 @@ function calculateDBSMultiplier(depositAmount, bankInfo, bankRequirements, addTi
         bonusRate = 0.005; // 0.50% bonus for 1 category and <$5k
       }
     }
-    
+
     const eligibleAmount = Math.min(depositAmount, 100000); // Cap at $100,000
     const bonusInterest = eligibleAmount * bonusRate;
     totalInterest += bonusInterest;
-    
+
     breakdown.push({
       amountInTier: parseFloat(eligibleAmount),
       tierRate: parseFloat(bonusRate),
@@ -814,13 +828,26 @@ function calculateDBSMultiplier(depositAmount, bankInfo, bankRequirements, addTi
       monthlyInterest: bonusInterest / 12,
       description: `Multiplier Bonus (${categoryCount} categories, $${totalTransactionAmount.toLocaleString()} transactions)`
     });
+  } else {
+    // If no salary credit, add an explanation in the breakdown
+    breakdown.push({
+      amountInTier: 0,
+      tierRate: 0,
+      tierInterest: 0,
+      monthlyInterest: 0,
+      description: "No bonus interest - Salary credit required"
+    });
   }
   
   // Calculate effective interest rate
   const interestRate = totalInterest / depositAmount;
   
   // Generate explanation
-  explanation = `DBS Multiplier account with $${depositAmount.toLocaleString()} deposit.`;
+  if (bankRequirements.hasSalary) {
+    explanation = `DBS Multiplier account with $${depositAmount.toLocaleString()} deposit and salary credit.`;
+  } else {
+    explanation = `DBS Multiplier account with $${depositAmount.toLocaleString()} deposit. No bonus interest as salary is not credited.`;
+  }
   
   console.log("DBS Multiplier breakdown:", breakdown);
   

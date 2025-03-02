@@ -26,8 +26,9 @@ const extractFeaturesFromInterestRates = () => {
     ],
     'DBS Multiplier': [
       'Up to 4.10% p.a. interest on your savings',
-      'Bonus interest based on transaction categories',
-      'First $50,000 at 1.80% with 1 category',
+      'Salary credit REQUIRED for bonus interest',
+      'Base rate 0.05% without salary credit',
+      'First $50,000 at 1.80% with salary + 1 category',
       'Higher rates with more transaction categories'
     ],
     'BOC SmartSaver': [
@@ -37,10 +38,10 @@ const extractFeaturesFromInterestRates = () => {
       'Bill payment bonuses available'
     ],
     'Chocolate': [
-      'Up to 3.6% p.a. interest on your savings',
+      'Up to 3.3% p.a. interest on your savings',
       'No requirements for bonus interest',
-      'First $20,000 at 3.6%',
-      'Next $30,000 at 3.3%'
+      'First $20,000 at 3.3%',
+      'Next $30,000 at 3.0%'
     ]
   };
   
@@ -439,14 +440,20 @@ export const banks = [
     name: 'Chocolate',
     logo: '/placeholder.svg',
     color: '#8B4513',
-    baseRate: 0.036, // 3.6%
-    maxRate: 0.036,  // 3.6%
-    savingsRate: 0.036, // 3.6%
+    baseRate: 0.033, // 3.3%
+    maxRate: 0.033,  // 3.3%
+    savingsRate: 0.033, // 3.3%
     mortgageRate: 6.50,
     personalLoanRate: 10.50,
     carLoanRate: 5.25,
     creditCardRate: 18.00,
-    features: bankFeatures['Chocolate'],
+    features: bankFeatures['Chocolate'] || [
+      'Up to 3.3% p.a. interest on your savings',
+      'No requirements for bonus interest',
+      'First $20,000 at 3.3%',
+      'Next $30,000 at 3.0%',
+      'No interest earned beyond $50,000'
+    ],
     requirements: {
       salary: false,
       spending: false,
@@ -457,16 +464,23 @@ export const banks = [
       {
         tierType: 'base',
         balanceTier: '1',
-        interestRate: 0.036, // 3.6%
+        interestRate: 0.033, // 3.3%
         capAmount: 20000,
         remarks: 'First $20k - no requirements'
       },
       {
         tierType: 'base',
         balanceTier: '2',
-        interestRate: 0.033, // 3.3%
+        interestRate: 0.03, // 3.0%
         capAmount: 30000,
         remarks: 'Next $30k - no requirements'
+      },
+      {
+        tierType: 'base',
+        balanceTier: '3',
+        interestRate: 0.0, // 0.0%
+        capAmount: 999999999,
+        remarks: 'Beyond $50k - no interest'
       }
     ]
   },
