@@ -251,7 +251,7 @@ const ChatWindow = ({ onClose, calculationResults = [] }) => {
       >
         <motion.div 
           ref={chatWindowRef}
-          className="glass-card w-full max-w-lg h-[600px] max-h-[90vh] flex flex-col rounded-xl overflow-hidden shadow-2xl"
+          className="glass-card w-full max-w-lg h-[95vh] flex flex-col rounded-xl overflow-hidden shadow-2xl"
           variants={chatWindowVariants}
           initial="hidden"
           animate="visible"
@@ -331,7 +331,10 @@ const ChatWindow = ({ onClose, calculationResults = [] }) => {
             <div className="flex space-x-2">
               <Textarea
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setInput(value === '0' ? '' : value);
+                }}
                 onKeyDown={handleKeyDown}
                 placeholder="Type your message..."
                 className="flex-1 resize-none input-glass"

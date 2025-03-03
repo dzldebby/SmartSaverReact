@@ -69,6 +69,21 @@ const Calculator = ({
     }
   };
 
+  // Add this helper function at the top of the component
+  const handleNumericInput = (value, setter) => {
+    // If empty or just a minus sign, set to empty string
+    if (value === '' || value === '-') {
+      setter('');
+      return;
+    }
+    
+    // Convert to number and validate
+    const num = parseFloat(value);
+    if (!isNaN(num)) {
+      setter(num);
+    }
+  };
+
   // The handleSubmit function is not being used and contains undefined variables
   // Removing it to fix the errors
   
@@ -95,9 +110,10 @@ const Calculator = ({
                 <Input
                   id="deposit-amount"
                   type="number"
-                  value={depositAmount}
-                  onChange={(e) => setDepositAmount(Number(e.target.value))}
+                  value={depositAmount || ''}
+                  onChange={(e) => handleNumericInput(e.target.value, setDepositAmount)}
                   className="input-glass"
+                  min="0"
                 />
                 <Button 
                   onClick={() => setDepositAmount(10000)}
@@ -167,9 +183,10 @@ const Calculator = ({
                     <Input
                       id="salary-amount"
                       type="number"
-                      value={salaryAmount}
-                      onChange={(e) => setSalaryAmount(Number(e.target.value))}
+                      value={salaryAmount || ''}
+                      onChange={(e) => handleNumericInput(e.target.value, setSalaryAmount)}
                       className="input-glass"
+                      min="0"
                     />
                     <p className="text-xs text-muted-foreground">
                       Selected Salary Amount: ${formatNumberLocal(salaryAmount)}
@@ -186,9 +203,10 @@ const Calculator = ({
                   <Input
                     id="card-spend"
                     type="number"
-                    value={cardSpend}
-                    onChange={(e) => setCardSpend(Number(e.target.value))}
+                    value={cardSpend || ''}
+                    onChange={(e) => handleNumericInput(e.target.value, setCardSpend)}
                     className="input-glass"
+                    min="0"
                   />
                   <p className="text-xs text-muted-foreground">
                     Selected Card Spend: ${formatNumberLocal(cardSpend)}
@@ -202,11 +220,11 @@ const Calculator = ({
                   <Input
                     id="giro-count"
                     type="number"
-                    value={giroCount}
-                    onChange={(e) => setGiroCount(Number(e.target.value))}
+                    value={giroCount || ''}
+                    onChange={(e) => handleNumericInput(e.target.value, setGiroCount)}
+                    className="input-glass"
                     min="0"
                     max="10"
-                    className="input-glass"
                   />
                   <p className="text-xs text-muted-foreground">
                     Selected Bill Payments: {giroCount}
@@ -265,9 +283,10 @@ const Calculator = ({
                     <Input
                       id="insurance-amount"
                       type="number"
-                      value={insuranceAmount}
-                      onChange={(e) => setInsuranceAmount(Number(e.target.value))}
+                      value={insuranceAmount || ''}
+                      onChange={(e) => handleNumericInput(e.target.value, setInsuranceAmount)}
                       className="input-glass"
+                      min="0"
                     />
                   </motion.div>
                 )}
@@ -297,9 +316,10 @@ const Calculator = ({
                     <Input
                       id="investment-amount"
                       type="number"
-                      value={investmentAmount}
-                      onChange={(e) => setInvestmentAmount(Number(e.target.value))}
+                      value={investmentAmount || ''}
+                      onChange={(e) => handleNumericInput(e.target.value, setInvestmentAmount)}
                       className="input-glass"
+                      min="0"
                     />
                   </motion.div>
                 )}
@@ -329,9 +349,10 @@ const Calculator = ({
                     <Input
                       id="home-loan-amount"
                       type="number"
-                      value={homeLoanAmount}
-                      onChange={(e) => setHomeLoanAmount(Number(e.target.value))}
+                      value={homeLoanAmount || ''}
+                      onChange={(e) => handleNumericInput(e.target.value, setHomeLoanAmount)}
                       className="input-glass"
+                      min="0"
                     />
                   </motion.div>
                 )}
