@@ -5,20 +5,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Loader2 } from 'lucide-react';
 import { Button, Textarea } from './ui';
 
-const ChatWindow = ({ onClose }) => {
+const ChatWindow = ({ onClose, calculationResults = [] }) => {
   // Generate welcome message
   const generateWelcomeMessage = () => {
-    return "Hi there! I'm your SmartSaver Assistant. How can I help you understand your interest rates and savings options?";
+    return "Hi there! I'm your banking assistant. I can help you understand your interest calculations and provide advice on maximizing your returns. What would you like to know about your savings options?";
   };
   
   const [messages, setMessages] = useState([
-    { 
-      role: 'assistant', 
-      content: generateWelcomeMessage()
-    },
     {
       role: 'assistant',
-      content: 'You can ask me questions like:\n• Why is one bank giving higher interest than another?\n• What would happen if I increased my card spend?\n• How does a specific bank calculate bonus interest?'
+      content: "Hi there! I'm your banking assistant. I can help you understand your interest calculations and provide advice on maximizing your returns. What would you like to know about your savings options?"
     }
   ]);
   
@@ -49,34 +45,144 @@ const ChatWindow = ({ onClose }) => {
     };
   }, [onClose]);
   
-  const handleSendMessage = async () => {
+  // Add a function to generate a simulated AI response
+  const generateAIResponse = (userMessage, calculationResults) => {
+    console.log("Generating simulated AI response for:", userMessage);
+    console.log("Based on calculation results:", calculationResults);
+    
+    // Check if the message contains specific keywords to provide relevant responses
+    const msg = userMessage.toLowerCase();
+    
+    if (msg.includes("hello") || msg.includes("hi ") || msg.includes("hey")) {
+      return "Hello! I'm your banking assistant. How can I help you with your interest calculations today?";
+    }
+    
+    if (msg.includes("thank")) {
+      return "You're welcome! Feel free to ask if you have any other questions about your banking options.";
+    }
+    
+    if (msg.includes("interest rate") || msg.includes("rates")) {
+      if (calculationResults && calculationResults.length > 0) {
+        // Find the bank with the highest interest rate
+        const highestInterestBank = calculationResults.reduce((prev, current) => 
+          (current.annualInterest > prev.annualInterest) ? current : prev
+        );
+        
+        return `Based on your inputs, ${getBankName(highestInterestBank.bankId)} offers the highest interest rate at ${(highestInterestBank.interestRate * 100).toFixed(2)}%, giving you $${highestInterestBank.annualInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} annually. Would you like to know more about how this is calculated?`;
+      } else {
+        return "Interest rates vary between banks based on your deposit amount and whether you meet certain criteria like salary crediting, card spending, and bill payments. Try calculating your interest using the calculator to see personalized rates.";
+      }
+    }
+    
+    if (msg.includes("which bank") || msg.includes("best bank") || msg.includes("highest")) {
+      if (calculationResults && calculationResults.length > 0) {
+        // Find the bank with the highest interest
+        const highestInterestBank = calculationResults.reduce((prev, current) => 
+          (current.annualInterest > prev.annualInterest) ? current : prev
+        );
+        
+        return `Based on your inputs, ${getBankName(highestInterestBank.bankId)} offers the highest interest at $${highestInterestBank.annualInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} per year ($${highestInterestBank.monthlyInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} per month). This is based on their interest rate of ${(highestInterestBank.interestRate * 100).toFixed(2)}%.`;
+      } else {
+        return "The best bank depends on your specific financial situation. UOB One, OCBC 360, and BOC SmartSaver often offer competitive rates if you meet their requirements. Try using the calculator to see which bank would give you the highest interest based on your deposit amount and banking habits.";
+      }
+    }
+    
+    if (msg.includes("how") && (msg.includes("calculate") || msg.includes("calculated") || msg.includes("computation"))) {
+      return "Banks calculate interest based on several factors: 1) Your deposit amount, 2) Whether you credit your salary, 3) Your credit card spending, 4) Bill payments or GIRO transactions, 5) If you have insurance or investments with them. Each bank has different tiers and rates for these criteria. The calculator shows you the breakdown for each bank based on your inputs.";
+    }
+    
+    if (msg.includes("salary") || msg.includes("credit")) {
+      return "Crediting your salary to a bank account can significantly boost your interest rates. For example, UOB One offers up to 3.00% on the first $75,000 with salary crediting, while OCBC 360 offers 1.20% for salary crediting of at least $1,800. BOC SmartSaver offers 2.50% bonus interest for salary credit of $2,000 or more.";
+    }
+    
+    if (msg.includes("card") || msg.includes("spend")) {
+      return "Card spending is a common way to increase your interest rates. UOB One requires a minimum spend of $500, OCBC 360 offers 0.30% for spending at least $500, and BOC SmartSaver offers between 0.50% to 0.80% depending on your spending amount. Meeting these spending requirements can significantly boost your overall interest.";
+    }
+    
+    if (msg.includes("insurance") || msg.includes("wealth")) {
+      return "Having insurance products with your bank can boost your interest rates. For example, BOC SmartSaver offers a 2.40% Wealth Bonus if you have insurance products with them. OCBC 360 also offers 2.40% on the first $75,000 for insurance products. This can be a significant boost to your overall interest earnings.";
+    }
+    
+    // Default response if no specific keywords are matched
+    return "I can help you understand how different banks calculate interest and which options might be best for your situation. You can ask me about specific banks, interest calculation methods, or ways to maximize your interest earnings. If you've used the calculator, I can also provide insights based on your results.";
+  };
+  
+  // Helper function to get a readable bank name
+  const getBankName = (bankId) => {
+    const bankNames = {
+      'uob-one': 'UOB One Account',
+      'ocbc-360': 'OCBC 360 Account',
+      'dbs-multiplier': 'DBS Multiplier Account',
+      'sc-bonussaver': 'Standard Chartered BonusSaver',
+      'boc-smartsaver': 'BOC SmartSaver',
+      'cimb-fastsaver': 'CIMB FastSaver',
+      'maybank-saveup': 'Maybank SaveUp Account',
+      'hsbc-everyday': 'HSBC Everyday Global Account',
+      'chocolate': 'Chocolate Account'
+    };
+    
+    return bankNames[bankId] || bankId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+  
+  // Update the handleSendMessage function to use the new API endpoint
+  const handleSendMessage = async (input) => {
     if (!input.trim()) return;
     
     // Add user message to chat
-    setMessages(prev => [...prev, { role: 'user', content: input }]);
-    
-    // Clear input field
+    const updatedMessages = [
+      ...messages,
+      { role: 'user', content: input }
+    ];
+    setMessages(updatedMessages);
     setInput('');
     
-    // Set loading state
+    // Show typing indicator
     setIsLoading(true);
     setApiError(null);
     
     try {
-      // Simulate API call with a timeout
-      setTimeout(() => {
-        setMessages(prev => [
-          ...prev, 
-          { 
-            role: 'assistant', 
-            content: "I'm a demo assistant. In the full version, I would provide personalized advice about your banking options and interest rates. For now, I can tell you that maximizing your interest often involves meeting specific bank requirements like salary crediting, minimum card spend, and bill payments."
-          }
+      console.log("Attempting to send chat message...");
+      
+      const response = await fetch('http://localhost:3001/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: updatedMessages,
+          calculationResults: calculationResults
+        })
+      });
+      
+      console.log("API response status:", response.status);
+      
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("API response data:", data);
+      
+      if (data && data.message) {
+        setMessages([
+          ...updatedMessages,
+          { role: 'assistant', content: data.message }
         ]);
-        setIsLoading(false);
-      }, 1500);
+      } else {
+        throw new Error('Invalid response format from API');
+      }
     } catch (error) {
-      console.error('Error sending message:', error);
-      setApiError('Sorry, there was an error processing your request. Please try again.');
+      console.error("Error in message handling:", error);
+      
+      // Use fallback response
+      const fallbackResponse = generateAIResponse(input, calculationResults);
+      console.log("Using fallback response:", fallbackResponse);
+      
+      setMessages([
+        ...updatedMessages,
+        { role: 'assistant', content: fallbackResponse }
+      ]);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -84,9 +190,26 @@ const ChatWindow = ({ onClose }) => {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      handleSendMessage(input);
     }
   };
+  
+  // Add API test function
+  const testApiConnection = async () => {
+    try {
+      console.log('Testing API connection...');
+      const response = await fetch('http://localhost:3001/api/test');
+      const data = await response.json();
+      console.log('API test response:', data);
+    } catch (error) {
+      console.error('API test failed:', error);
+    }
+  };
+
+  // Add useEffect to test API on mount
+  useEffect(() => {
+    testApiConnection();
+  }, []);
   
   const chatWindowVariants = {
     hidden: { opacity: 0, y: 50, scale: 0.9 },
@@ -215,7 +338,7 @@ const ChatWindow = ({ onClose }) => {
                 rows={1}
               />
               <Button 
-                onClick={handleSendMessage} 
+                onClick={() => handleSendMessage(input)} 
                 disabled={isLoading || !input.trim()}
                 className="bg-primary hover:bg-primary-600"
               >

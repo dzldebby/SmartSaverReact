@@ -244,7 +244,7 @@ function App() {
       {hasCalculated && (
         <>
           <ChatButton onClick={() => setIsChatOpen(true)} />
-          {isChatOpen && <ChatWindow onClose={() => setIsChatOpen(false)} />}
+          {isChatOpen && <ChatWindow onClose={() => setIsChatOpen(false)} calculationResults={Object.values(calculationResults)} />}
         </>
       )}
     </Layout>
