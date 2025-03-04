@@ -9,6 +9,7 @@ import ChatButton from './components/ChatButton';
 import ChatWindow from './components/ChatWindow';
 import Layout from './components/Layout';
 import { calculateInterest } from './lib/calculations';
+import { findOptimalDistribution } from './lib/optimizationEngine';
 import { banks } from './data/banks';
 import './App.css';
 
@@ -18,6 +19,14 @@ function App() {
   const [calculationResults, setCalculationResults] = useState({});
   const [hasCalculated, setHasCalculated] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [optimizationResults, setOptimizationResults] = useState([]);
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [optimizationProgress, setOptimizationProgress] = useState({
+    status: '',
+    progress: 0,
+    totalScenarios: 0,
+    currentScenario: 0
+  });
   
   // User requirements
   const [hasSalary, setHasSalary] = useState(false);
@@ -54,7 +63,49 @@ function App() {
     }).format(n);
   };
   
-  // Calculate results for all banks
+  // Add optimization handler
+  const handleOptimize = async () => {
+    setIsOptimizing(true);
+    try {
+      const requirements = {
+        hasSalary,
+        salaryAmount,
+        spendAmount: cardSpend,
+        giroCount,
+        hasInsurance,
+        insuranceAmount,
+        hasInvestments,
+        investmentAmount,
+        hasHomeLoan,
+        homeLoanAmount,
+        increasedBalance,
+        grewWealth
+      };
+      
+      // Set up progress callback
+      const { setProgressCallback } = require('./lib/optimizationEngine');
+      setProgressCallback((progress) => {
+        setOptimizationProgress(progress);
+      });
+      
+      const results = await findOptimalDistribution(depositAmount, requirements);
+      setOptimizationResults(results);
+      setCalculationResults({}); // Clear calculation results
+      setHasCalculated(true); // Keep the right panel visible
+    } catch (error) {
+      console.error("Error in handleOptimize:", error);
+    } finally {
+      setIsOptimizing(false);
+      setOptimizationProgress({
+        status: '',
+        progress: 0,
+        totalScenarios: 0,
+        currentScenario: 0
+      });
+    }
+  };
+  
+  // Modify calculateResults to clear optimization results
   const calculateResults = () => {
     console.log("calculateResults function called");
     console.log("Current state:", { 
@@ -111,17 +162,19 @@ function App() {
         
         formattedResults[result.bankId] = {
           bankId: result.bankId,
+          depositAmount: depositAmount,
           monthlyInterest: result.monthlyInterest,
           annualInterest: result.annualInterest,
           interestRate: result.interestRate,
           breakdown: result.breakdown || []
-      };
-    });
+        };
+      });
     
       console.log("Formatted results:", formattedResults);
       console.log("Formatted results bank IDs:", Object.keys(formattedResults));
       setCalculationResults(formattedResults);
-    setHasCalculated(true);
+      setHasCalculated(true);
+      setOptimizationResults([]); // Clear optimization results
       
       // MODIFIED: Select all banks for data processing
       const allBankIds = results.map(result => result.bankId);
@@ -138,16 +191,37 @@ function App() {
   
   return (
     <Layout>
-      <div className="space-y-4">
+      <div className="space-y-4 p-4 bg-gray-50 min-h-screen">
+        {/* Loading Overlay */}
+        {isOptimizing && (
+          <div className="fixed inset-0 flex flex-col items-center justify-center bg-white/90 z-50">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-600 mb-4"></div>
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">
+              {optimizationProgress.status}
+            </h3>
+            <div className="w-80">
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-green-600 transition-all duration-300"
+                  style={{ width: `${optimizationProgress.progress}%` }}
+                ></div>
+              </div>
+              <p className="text-sm text-gray-600 mt-2 text-center">
+                {optimizationProgress.currentScenario} of {optimizationProgress.totalScenarios} scenarios
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Side-by-side layout for calculator and comparison table */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             className="h-full"
           >
-            <Card className="glass-card h-full">
+            <Card className="glass-card h-full bg-white">
               <CardHeader className="bg-gray-100 py-2 px-3">
                 <CardTitle className="text-left text-black">Savings Calculator</CardTitle>
               </CardHeader>
@@ -180,6 +254,7 @@ function App() {
                   grewWealth={grewWealth}
                   setGrewWealth={setGrewWealth}
                   calculateResults={calculateResults}
+                  handleOptimize={handleOptimize}
                   formatNumber={formatNumber}
                 />
               </CardContent>
@@ -193,35 +268,77 @@ function App() {
               transition={{ duration: 0.5, delay: 0.4 }}
               className="h-full"
             >
-              <div className="h-full overflow-auto max-h-[80vh]">
-                {Object.values(calculationResults).length > 0 && (
-                  <motion.div 
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                    className="bg-green-100 border border-green-400 text-green-800 px-4 py-3 rounded-md mb-4 flex items-center shadow-sm"
-                  >
-                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
+              <Card className="glass-card h-full bg-white">
+                <CardHeader className="bg-gray-100 py-2 px-3">
+                  <CardTitle className="text-left text-black">Results</CardTitle>
+                </CardHeader>
+                <CardContent className="overflow-auto max-h-[80vh] px-3">
+                  {optimizationResults.length > 0 ? (
                     <div>
-                      <span className="font-bold">Best Option: </span>
-                      {(() => {
-                        const results = Object.values(calculationResults);
-                        const bestBank = results.reduce((prev, current) => 
-                          (prev.interestRate > current.interestRate) ? prev : current
-                        );
-                        const bankInfo = getBankById(bestBank.bankId);
-                        return `${bankInfo?.name || bestBank.bankId} offers the highest interest rate at ${(bestBank.interestRate * 100).toFixed(2)}%`;
-                      })()}
+                      <h3 className="text-xl font-semibold mb-4">Optimization Results</h3>
+                      {optimizationResults.map((result, index) => (
+                        <div key={index} className="mb-6 p-4 border rounded-lg bg-white">
+                          <h4 className="font-medium mb-2">Option {index + 1}</h4>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-sm text-gray-600">Monthly Interest</p>
+                              <p className="text-lg font-semibold">${result.monthlyInterest.toFixed(2)}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600">Effective Rate</p>
+                              <p className="text-lg font-semibold">{(result.effectiveRate * 100).toFixed(2)}%</p>
+                            </div>
+                          </div>
+                          <div className="mt-4">
+                            <p className="text-sm text-gray-600 mb-2">Distribution:</p>
+                            <div className="space-y-2">
+                              {Object.entries(result.distribution).map(([bankId, amount]) => (
+                                <div key={bankId} className="flex justify-between text-sm">
+                                  <span>{getBankById(bankId)?.name || bankId}</span>
+                                  <span>${amount.toLocaleString()}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </motion.div>
-                )}
-                <ComparisonTable 
-                  results={Object.values(calculationResults)} 
-                  getBankById={getBankById} 
-                />
-              </div>
+                  ) : Object.values(calculationResults).length > 0 ? (
+                    <>
+                      <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3 }}
+                        className="bg-green-100 border border-green-400 text-green-800 px-4 py-3 rounded-md mb-4 flex items-center shadow-sm"
+                      >
+                        <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <div>
+                          <span className="font-bold">Best Option: </span>
+                          {(() => {
+                            const results = Object.values(calculationResults);
+                            const bestBank = results.reduce((prev, current) => 
+                              (prev.interestRate > current.interestRate) ? prev : current
+                            );
+                            const bankInfo = getBankById(bestBank.bankId);
+                            return `${bankInfo?.name || bestBank.bankId} offers the highest interest rate at ${(bestBank.interestRate * 100).toFixed(2)}%`;
+                          })()}
+                        </div>
+                      </motion.div>
+                      <ComparisonTable 
+                        results={Object.values(calculationResults)} 
+                        getBankById={getBankById} 
+                      />
+                    </>
+                  ) : (
+                    <div className="text-center py-8">
+                      <h3 className="text-xl font-medium text-gray-500 mb-4">Enter your details and calculate to see bank comparison</h3>
+                      <p className="text-muted-foreground">The comparison table will appear here after calculation</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </motion.div>
           ) : (
             <motion.div
@@ -230,10 +347,15 @@ function App() {
               transition={{ duration: 0.5, delay: 0.4 }}
               className="h-full"
             >
-              <Card className="glass-card h-full flex items-center justify-center">
-                <CardContent className="text-center p-4">
-                  <h3 className="text-xl font-medium text-gray-500 mb-4">Enter your details and calculate to see bank comparison</h3>
-                  <p className="text-muted-foreground">The comparison table will appear here after calculation</p>
+              <Card className="glass-card h-full bg-white">
+                <CardHeader className="bg-gray-100 py-2 px-3">
+                  <CardTitle className="text-left text-black">Results</CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center h-full">
+                  <div className="text-center p-4">
+                    <h3 className="text-xl font-medium text-gray-500 mb-4">Enter your details and calculate to see bank comparison</h3>
+                    <p className="text-muted-foreground">The comparison table will appear here after calculation</p>
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
