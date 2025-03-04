@@ -209,7 +209,7 @@ function App() {
   
   return (
     <Layout>
-      <div className="space-y-4 p-4 bg-gray-50 min-h-screen">
+      <div className="space-y-4 p-0 bg-gray-50 min-h-screen">
         {/* Loading Overlay */}
         {isOptimizing && (
           <div className="fixed inset-0 flex flex-col items-center justify-center bg-white/90 z-50">
