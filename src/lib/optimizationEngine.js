@@ -37,35 +37,69 @@ function calculateScenarioInterest(distribution, requirements) {
     let totalInterest = 0;
     const breakdown = {};
     let salaryBankId = null;
+    let bestSalaryBankReturn = -Infinity;
     
-    // Find the salary bank - prioritize UOB One if it has sufficient deposit
-    for (const [bankId, amount] of Object.entries(distribution)) {
-      if (amount > 0) {
-        const bank = BANKS[bankId];
-        console.log(`Checking bank ${bankId}:`, {
-          amount,
-          bank,
-          requirements
-        });
-        
-        // For UOB One, check if amount and requirements are sufficient for salary bonus
-        if (bankId === 'uob-one' && 
-            requirements.hasSalary && 
-            requirements.salaryAmount >= 1600 && 
-            requirements.spendAmount >= 500) {
-          salaryBankId = bankId;
-          console.log('Found UOB One as salary bank:', bankId);
-          break;
+    // If we have SALA transaction code, UOB One doesn't need actual salary credit
+    const hasUOBSalaryEquivalent = requirements.transactionCode === 'SALA';
+    
+    // First pass: Calculate returns for each bank with and without salary credit
+    // to find which bank benefits most from salary credit
+    if (requirements.hasSalary) {
+      let candidateBanks = [];
+      
+      // First gather all possible salary banks and their benefits
+      for (const [bankId, amount] of Object.entries(distribution)) {
+        if (amount > 0) {
+          const bank = BANKS[bankId];
+          
+          // Skip UOB if we're using SALA code (as it gets salary benefits anyway)
+          if (bankId === 'uob-one' && hasUOBSalaryEquivalent) {
+            continue;
+          }
+          
+          // Calculate return without salary credit
+          const normalResult = calculateBankInterest(amount, bank, {
+            ...requirements,
+            isSalaryBank: false
+          });
+          
+          // Calculate return with salary credit
+          const salaryResult = calculateBankInterest(amount, bank, {
+            ...requirements,
+            isSalaryBank: true
+          });
+          
+          // Calculate the benefit of salary credit
+          if (salaryResult && normalResult) {
+            const salaryBenefit = salaryResult.totalInterest - normalResult.totalInterest;
+            console.log(`Salary benefit for ${bankId}:`, salaryBenefit);
+            
+            // Add to candidates list - all banks can receive salary credit
+            candidateBanks.push({ bankId, salaryBenefit });
+          }
         }
-        // For other banks that require salary
-        else if (bank?.requiresSalary && requirements.hasSalary) {
-          salaryBankId = bankId;
-          console.log('Found other salary bank:', bankId);
-          break;
-        }
+      }
+      
+      // If we have candidates, pick the best one (even if negative)
+      if (candidateBanks.length > 0) {
+        // Sort by benefit (highest to lowest)
+        candidateBanks.sort((a, b) => b.salaryBenefit - a.salaryBenefit);
+        salaryBankId = candidateBanks[0].bankId;
+        bestSalaryBankReturn = candidateBanks[0].salaryBenefit;
+        console.log('Candidate banks for salary:', candidateBanks);
+      } else {
+        console.log('No candidate banks found for salary credit!');
       }
     }
     
+    // If using SALA code and UOB One is in the distribution, mark it as receiving salary benefits
+    if (hasUOBSalaryEquivalent && distribution['uob-one'] > 0) {
+      salaryBankId = salaryBankId || 'uob-one';  // Only set UOB if no better bank was found
+    }
+    
+    console.log('Selected salary bank:', salaryBankId, 'with benefit:', bestSalaryBankReturn);
+    
+    // Second pass: Calculate final interest with optimal salary bank assignment
     for (const [bankId, amount] of Object.entries(distribution)) {
       if (amount > 0) {
         const bank = BANKS[bankId];
@@ -74,10 +108,11 @@ function calculateScenarioInterest(distribution, requirements) {
           continue;
         }
         
-        // Add salaryBankId to requirements if this is the salary bank
+        // Determine if this bank should get salary credit benefits
+        const isSalaryBank = bankId === salaryBankId || (bankId === 'uob-one' && hasUOBSalaryEquivalent);
         const bankRequirements = {
           ...requirements,
-          isSalaryBank: bankId === salaryBankId
+          isSalaryBank
         };
         
         const result = calculateBankInterest(amount, bank, bankRequirements);
@@ -90,7 +125,8 @@ function calculateScenarioInterest(distribution, requirements) {
           amount,
           interest: result.totalInterest,
           interestRate: result.interestRate,
-          breakdown: result.breakdown
+          breakdown: result.breakdown,
+          isSalaryBank  // Add this flag to the breakdown
         };
       }
     }
@@ -102,13 +138,17 @@ function calculateScenarioInterest(distribution, requirements) {
       effectiveRate: totalAmount > 0 ? totalInterest / totalAmount : 0,
       monthlyInterest: totalInterest / 12,
       breakdown,
-      salaryBankId  // Make sure salaryBankId is included in the result
+      salaryBankId,  // Make sure salaryBankId is included in the result
+      hasUOBSalaryEquivalent  // Add this flag to indicate SALA code usage
     };
+    
     console.log('Scenario result:', {
       distribution: result.distribution,
       salaryBankId: result.salaryBankId,
-      totalInterest: result.totalInterest
+      totalInterest: result.totalInterest,
+      hasUOBSalaryEquivalent: result.hasUOBSalaryEquivalent
     });
+    
     return result;
   } catch (error) {
     console.error('Error calculating scenario interest:', error);
@@ -118,7 +158,8 @@ function calculateScenarioInterest(distribution, requirements) {
       effectiveRate: 0,
       monthlyInterest: 0,
       breakdown: {},
-      salaryBankId: null
+      salaryBankId: null,
+      hasUOBSalaryEquivalent: false
     };
   }
 }
@@ -135,14 +176,14 @@ function validateBankRequirements(bankId, requirements) {
   
   // Special handling for UOB One
   if (bankId === 'uob-one') {
-    // If trying to get salary bonus
-    if (requirements.hasSalary) {
+    // If trying to get salary bonus (either through actual salary or SALA code)
+    if (requirements.hasSalary || requirements.transactionCode === 'SALA') {
       // Check minimum salary and spend requirements
       if (requirements.salaryAmount < 1600 || requirements.spendAmount < 500) {
         return false;
       }
     }
-    // If not using salary, still need minimum spend
+    // If not using salary or SALA, still need minimum spend
     else if (requirements.spendAmount < 500) {
       return false;
     }
@@ -151,7 +192,7 @@ function validateBankRequirements(bankId, requirements) {
   
   // For other banks, check minimum salary requirement if applicable
   if (bank.requiresSalary) {
-    // If bank requires salary, we need salary credit enabled
+    // If bank requires salary, we need salary credit enabled (and not using SALA for another bank)
     if (!requirements.hasSalary) {
       return false;
     }
@@ -174,30 +215,15 @@ function generateDistributionScenarios(totalAmount, requirements) {
   const bankIds = Object.keys(BANKS);
   const scenarios = [];
   
-  // Find potential salary banks
-  const potentialSalaryBanks = bankIds.filter(bankId => {
-    const bank = BANKS[bankId];
-    // Check if bank can be a salary bank
-    if (bankId === 'uob-one') {
-      return requirements.hasSalary && 
-             requirements.salaryAmount >= 1600 && 
-             requirements.spendAmount >= 500;
-    }
-    return bank.requiresSalary && requirements.hasSalary;
-  });
-  
   // Helper function to generate combinations recursively
-  function generateCombinations(remaining, currentBank, currentDist, salaryBankId = null) {
+  function generateCombinations(remaining, currentBank, currentDist) {
     // Base case: all money distributed or no more banks
     if (remaining === 0 || currentBank >= bankIds.length) {
       if (remaining === 0) {
-        // Only add scenario if it has a valid salary bank when required
-        if (!requirements.hasSalary || salaryBankId) {
-          scenarios.push({
-            distribution: { ...currentDist },
-            salaryBankId
-          });
-        }
+        // Add all valid distributions - salary bank will be determined during interest calculation
+        scenarios.push({
+          distribution: { ...currentDist }
+        });
       }
       return;
     }
@@ -207,7 +233,7 @@ function generateDistributionScenarios(totalAmount, requirements) {
     
     // Skip if bank doesn't meet requirements
     if (!validateBankRequirements(bankId, requirements)) {
-      generateCombinations(remaining, currentBank + 1, currentDist, salaryBankId);
+      generateCombinations(remaining, currentBank + 1, currentDist);
       return;
     }
     
@@ -215,14 +241,7 @@ function generateDistributionScenarios(totalAmount, requirements) {
     const maxForBank = Math.min(remaining, bank.maxCap || remaining);
     for (let amount = 0; amount <= maxForBank; amount += INCREMENT) {
       currentDist[bankId] = amount;
-      
-      // Handle salary bank assignment
-      let newSalaryBankId = salaryBankId;
-      if (amount > 0 && !salaryBankId && potentialSalaryBanks.includes(bankId)) {
-        newSalaryBankId = bankId;
-      }
-      
-      generateCombinations(remaining - amount, currentBank + 1, currentDist, newSalaryBankId);
+      generateCombinations(remaining - amount, currentBank + 1, currentDist);
     }
     
     // Clean up
@@ -230,7 +249,7 @@ function generateDistributionScenarios(totalAmount, requirements) {
   }
   
   // Start generation with full amount
-  generateCombinations(totalAmount, 0, {}, null);
+  generateCombinations(totalAmount, 0, {});
   
   return scenarios;
 }
