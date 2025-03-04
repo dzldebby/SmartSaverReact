@@ -757,7 +757,7 @@ function calculateBOCSmartSaver(depositAmount, bankInfo, bankRequirements, addTi
       minRequired: 3
     });
 
-    if (bankRequirements.giroCount >= 3) {
+  if (bankRequirements.giroCount >= 3) {
       const paymentTier = bankInfo.tiers.find(t => t.type === 'payment');
       console.log('Payment tier found:', paymentTier);
       
@@ -783,12 +783,12 @@ function calculateBOCSmartSaver(depositAmount, bankInfo, bankRequirements, addTi
       exceedsThreshold: depositAmount > 100000
     });
 
-    if (depositAmount > 100000) {
+  if (depositAmount > 100000) {
       const extraTier = bankInfo.tiers.find(t => t.type === 'extra');
       console.log('Extra tier found:', extraTier);
       
-      if (extraTier) {
-        const extraAmount = depositAmount - 100000;
+    if (extraTier) {
+      const extraAmount = depositAmount - 100000;
         const rate = extraTier.rate;
         const interest = extraAmount * rate;
         totalInterest += interest;
@@ -802,7 +802,7 @@ function calculateBOCSmartSaver(depositAmount, bankInfo, bankRequirements, addTi
       }
     }
   }
-
+  
   // Calculate effective interest rate
   const interestRate = totalInterest / depositAmount;
   console.log('Final calculation:', {
@@ -953,30 +953,30 @@ function calculateDBSMultiplier(depositAmount, bankInfo, bankRequirements, addTi
 
   // Step 2: Calculate total eligible transactions and category count
   let totalTransactions = 0;
-  let categoryCount = 0;
+    let categoryCount = 0;
 
   // Add card spend if exists
-  if (bankRequirements.spendAmount >= 500) {
+    if (bankRequirements.spendAmount >= 500) {
     totalTransactions += bankRequirements.spendAmount;
-    categoryCount++;
-  }
+      categoryCount++;
+    }
 
   // Add home loan amount if category selected
   if (bankRequirements.hasHomeLoan) {
     totalTransactions += bankRequirements.homeLoanAmount || 0;
-    categoryCount++;
-  }
+      categoryCount++;
+    }
 
   // Add insurance amount if category selected
-  if (bankRequirements.hasInsurance) {
+    if (bankRequirements.hasInsurance) {
     totalTransactions += bankRequirements.insuranceAmount || 0;
-    categoryCount++;
-  }
+      categoryCount++;
+    }
 
   // Add investment amount if category selected
   if (bankRequirements.hasInvestments) {
     totalTransactions += bankRequirements.investmentAmount || 0;
-    categoryCount++;
+      categoryCount++;
   }
 
   console.log('Transaction details:', {
@@ -1003,7 +1003,7 @@ function calculateDBSMultiplier(depositAmount, bankInfo, bankRequirements, addTi
     tierType += "high";
   } else if (totalTransactions >= 15000) {
     tierType += "mid";
-  } else {
+      } else {
     tierType += "low";
   }
 
@@ -1024,7 +1024,7 @@ function calculateDBSMultiplier(depositAmount, bankInfo, bankRequirements, addTi
     });
     addTier(bonusAmount, rate, bonusTier.remarks);
   }
-
+  
   // Calculate effective interest rate
   const interestRate = totalInterest / depositAmount;
   console.log('Final calculation:', {

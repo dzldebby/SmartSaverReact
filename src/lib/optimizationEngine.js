@@ -36,6 +36,35 @@ function calculateScenarioInterest(distribution, requirements) {
     console.log('Calculating interest for scenario:', distribution);
     let totalInterest = 0;
     const breakdown = {};
+    let salaryBankId = null;
+    
+    // Find the salary bank - prioritize UOB One if it has sufficient deposit
+    for (const [bankId, amount] of Object.entries(distribution)) {
+      if (amount > 0) {
+        const bank = BANKS[bankId];
+        console.log(`Checking bank ${bankId}:`, {
+          amount,
+          bank,
+          requirements
+        });
+        
+        // For UOB One, check if amount and requirements are sufficient for salary bonus
+        if (bankId === 'uob-one' && 
+            requirements.hasSalary && 
+            requirements.salaryAmount >= 1600 && 
+            requirements.spendAmount >= 500) {
+          salaryBankId = bankId;
+          console.log('Found UOB One as salary bank:', bankId);
+          break;
+        }
+        // For other banks that require salary
+        else if (bank?.requiresSalary && requirements.hasSalary) {
+          salaryBankId = bankId;
+          console.log('Found other salary bank:', bankId);
+          break;
+        }
+      }
+    }
     
     for (const [bankId, amount] of Object.entries(distribution)) {
       if (amount > 0) {
@@ -44,7 +73,14 @@ function calculateScenarioInterest(distribution, requirements) {
           console.error(`Bank not found: ${bankId}`);
           continue;
         }
-        const result = calculateBankInterest(amount, bank, requirements);
+        
+        // Add salaryBankId to requirements if this is the salary bank
+        const bankRequirements = {
+          ...requirements,
+          isSalaryBank: bankId === salaryBankId
+        };
+        
+        const result = calculateBankInterest(amount, bank, bankRequirements);
         if (!result) {
           console.warn(`No result returned for bank ${bankId} with amount ${amount}`);
           continue;
@@ -60,13 +96,20 @@ function calculateScenarioInterest(distribution, requirements) {
     }
     
     const totalAmount = Object.values(distribution).reduce((a, b) => a + b, 0);
-    return {
+    const result = {
       distribution,
       totalInterest,
       effectiveRate: totalAmount > 0 ? totalInterest / totalAmount : 0,
       monthlyInterest: totalInterest / 12,
-      breakdown
+      breakdown,
+      salaryBankId  // Make sure salaryBankId is included in the result
     };
+    console.log('Scenario result:', {
+      distribution: result.distribution,
+      salaryBankId: result.salaryBankId,
+      totalInterest: result.totalInterest
+    });
+    return result;
   } catch (error) {
     console.error('Error calculating scenario interest:', error);
     return {
@@ -74,7 +117,8 @@ function calculateScenarioInterest(distribution, requirements) {
       totalInterest: 0,
       effectiveRate: 0,
       monthlyInterest: 0,
-      breakdown: {}
+      breakdown: {},
+      salaryBankId: null
     };
   }
 }
@@ -89,9 +133,32 @@ function validateBankRequirements(bankId, requirements) {
   const bank = BANKS[bankId];
   if (!bank) return false;
   
-  // Check minimum salary requirement if applicable
-  if (bank.requiresSalary && (!requirements.hasSalary || requirements.salaryAmount < bank.minSalary)) {
-    return false;
+  // Special handling for UOB One
+  if (bankId === 'uob-one') {
+    // If trying to get salary bonus
+    if (requirements.hasSalary) {
+      // Check minimum salary and spend requirements
+      if (requirements.salaryAmount < 1600 || requirements.spendAmount < 500) {
+        return false;
+      }
+    }
+    // If not using salary, still need minimum spend
+    else if (requirements.spendAmount < 500) {
+      return false;
+    }
+    return true;
+  }
+  
+  // For other banks, check minimum salary requirement if applicable
+  if (bank.requiresSalary) {
+    // If bank requires salary, we need salary credit enabled
+    if (!requirements.hasSalary) {
+      return false;
+    }
+    // If bank has a minimum salary requirement, check it
+    if (bank.minSalary > 0 && requirements.salaryAmount < bank.minSalary) {
+      return false;
+    }
   }
   
   return true;
@@ -107,12 +174,30 @@ function generateDistributionScenarios(totalAmount, requirements) {
   const bankIds = Object.keys(BANKS);
   const scenarios = [];
   
+  // Find potential salary banks
+  const potentialSalaryBanks = bankIds.filter(bankId => {
+    const bank = BANKS[bankId];
+    // Check if bank can be a salary bank
+    if (bankId === 'uob-one') {
+      return requirements.hasSalary && 
+             requirements.salaryAmount >= 1600 && 
+             requirements.spendAmount >= 500;
+    }
+    return bank.requiresSalary && requirements.hasSalary;
+  });
+  
   // Helper function to generate combinations recursively
   function generateCombinations(remaining, currentBank, currentDist, salaryBankId = null) {
     // Base case: all money distributed or no more banks
     if (remaining === 0 || currentBank >= bankIds.length) {
       if (remaining === 0) {
-        scenarios.push({...currentDist});
+        // Only add scenario if it has a valid salary bank when required
+        if (!requirements.hasSalary || salaryBankId) {
+          scenarios.push({
+            distribution: { ...currentDist },
+            salaryBankId
+          });
+        }
       }
       return;
     }
@@ -126,27 +211,18 @@ function generateDistributionScenarios(totalAmount, requirements) {
       return;
     }
     
-    // Handle salary credit requirement
-    let bankReqs = {...requirements};
-    if (bank.requiresSalary) {
-      if (salaryBankId === null) {
-        // This bank can be the salary bank
-        bankReqs.hasSalary = true;
-        generateCombinations(remaining, currentBank + 1, currentDist, bankId);
-      } else if (salaryBankId === bankId) {
-        // This is the salary bank
-        bankReqs.hasSalary = true;
-      } else {
-        // Another bank is already the salary bank
-        bankReqs.hasSalary = false;
-      }
-    }
-    
     // Try different amounts for current bank
-    const maxForBank = Math.min(remaining, bank.maxCap);
+    const maxForBank = Math.min(remaining, bank.maxCap || remaining);
     for (let amount = 0; amount <= maxForBank; amount += INCREMENT) {
       currentDist[bankId] = amount;
-      generateCombinations(remaining - amount, currentBank + 1, currentDist, salaryBankId);
+      
+      // Handle salary bank assignment
+      let newSalaryBankId = salaryBankId;
+      if (amount > 0 && !salaryBankId && potentialSalaryBanks.includes(bankId)) {
+        newSalaryBankId = bankId;
+      }
+      
+      generateCombinations(remaining - amount, currentBank + 1, currentDist, newSalaryBankId);
     }
     
     // Clean up
@@ -154,7 +230,7 @@ function generateDistributionScenarios(totalAmount, requirements) {
   }
   
   // Start generation with full amount
-  generateCombinations(totalAmount, 0, {});
+  generateCombinations(totalAmount, 0, {}, null);
   
   return scenarios;
 }
@@ -165,7 +241,7 @@ function generateDistributionScenarios(totalAmount, requirements) {
  * @param {Object} requirements - User requirements
  * @returns {Array} Top 3 distribution scenarios
  */
-function findOptimalDistribution(totalAmount, requirements) {
+async function findOptimalDistribution(totalAmount, requirements) {
   console.log('Finding optimal distribution for:', { totalAmount, requirements });
   
   // Round total amount to nearest $5,000
@@ -191,25 +267,50 @@ function findOptimalDistribution(totalAmount, requirements) {
     currentScenario: 0
   });
   
-  // Calculate interest for each scenario
-  const results = scenarios.map((distribution, index) => {
-    // Update progress for each scenario
-    updateProgress({
-      status: 'Calculating interest for each scenario...',
-      progress: (index / scenarios.length) * 100,
-      totalScenarios: scenarios.length,
-      currentScenario: index + 1
+  // Calculate interest for each scenario in chunks to prevent UI blocking
+  const results = [];
+  const CHUNK_SIZE = 50; // Process 50 scenarios at a time
+  
+  for (let i = 0; i < scenarios.length; i += CHUNK_SIZE) {
+    const chunk = scenarios.slice(i, i + CHUNK_SIZE);
+    
+    // Process chunk
+    const chunkResults = chunk.map((scenario, index) => {
+      const globalIndex = i + index;
+      
+      // Update progress for each scenario
+      updateProgress({
+        status: 'Calculating interest for each scenario...',
+        progress: (globalIndex / scenarios.length) * 100,
+        totalScenarios: scenarios.length,
+        currentScenario: globalIndex + 1
+      });
+      
+      // Calculate interest for this scenario
+      const result = calculateScenarioInterest(scenario.distribution, requirements);
+      
+      // Preserve the salaryBankId from both calculation and scenario
+      result.salaryBankId = result.salaryBankId || scenario.salaryBankId;
+      
+      return result;
     });
     
-    return {
-      distribution,
-      ...calculateScenarioInterest(distribution, requirements)
-    };
-  });
+    results.push(...chunkResults);
+    
+    // Allow UI to update between chunks
+    await new Promise(resolve => setTimeout(resolve, 0));
+  }
   
   // Sort by total interest (descending) and take top 3
   results.sort((a, b) => b.totalInterest - a.totalInterest);
   const topResults = results.slice(0, 3);
+  
+  // Log the final top results
+  console.log('Top 3 results:', topResults.map(result => ({
+    distribution: result.distribution,
+    salaryBankId: result.salaryBankId,
+    totalInterest: result.totalInterest
+  })));
   
   // Update progress - complete
   updateProgress({
@@ -219,15 +320,7 @@ function findOptimalDistribution(totalAmount, requirements) {
     currentScenario: scenarios.length
   });
   
-  // Add ranking and format results
-  return topResults.map((result, index) => ({
-    rank: index + 1,
-    distribution: result.distribution,
-    totalInterest: result.totalInterest,
-    effectiveRate: result.effectiveRate,
-    monthlyInterest: result.monthlyInterest,
-    breakdown: result.breakdown
-  }));
+  return topResults;
 }
 
 module.exports = {

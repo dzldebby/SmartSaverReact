@@ -85,7 +85,7 @@ function calculateUOBOne(depositAmount, bankInfo, bankRequirements, addTier) {
   
   // Check if minimum spend requirement is met
   const hasSpend = bankRequirements.spendAmount >= 500;
-  const hasSalary = bankRequirements.hasSalary;
+  const hasSalary = bankRequirements.hasSalary && bankRequirements.isSalaryBank;
   
   if (!hasSpend) {
     // If minimum spend not met, only apply base interest
@@ -152,20 +152,6 @@ function calculateUOBOne(depositAmount, bankInfo, bankRequirements, addTier) {
         });
         remainingAmount -= thirdTierAmount;
       }
-      
-      // Any remaining amount gets base rate
-      if (remainingAmount > 0) {
-        const baseRate = 0.0005;
-        const baseInterest = remainingAmount * baseRate;
-        totalInterest += baseInterest;
-        breakdown.push({
-          amountInTier: remainingAmount,
-          tierRate: baseRate,
-          tierInterest: baseInterest,
-          monthlyInterest: baseInterest / 12,
-          description: 'Remaining Amount (Base Rate)'
-        });
-      }
     } else {
       // Spend only - 0.65% on first $75K
       const spendTierCap = 75000;
@@ -180,21 +166,21 @@ function calculateUOBOne(depositAmount, bankInfo, bankRequirements, addTier) {
         monthlyInterest: spendTierInterest / 12,
         description: 'First $75K (Spend Only)'
       });
-      
-      // Any amount above $75K gets base rate
-      const remainingAmount = depositAmount - spendTierAmount;
-      if (remainingAmount > 0) {
-        const baseRate = 0.0005;
-        const baseInterest = remainingAmount * baseRate;
-        totalInterest += baseInterest;
-        breakdown.push({
-          amountInTier: remainingAmount,
-          tierRate: baseRate,
-          tierInterest: baseInterest,
-          monthlyInterest: baseInterest / 12,
-          description: 'Remaining Amount (Base Rate)'
-        });
-      }
+      remainingAmount = depositAmount - spendTierAmount;
+    }
+    
+    // Any remaining amount gets base rate
+    if (remainingAmount > 0) {
+      const baseRate = 0.0005;
+      const baseInterest = remainingAmount * baseRate;
+      totalInterest += baseInterest;
+      breakdown.push({
+        amountInTier: remainingAmount,
+        tierRate: baseRate,
+        tierInterest: baseInterest,
+        monthlyInterest: baseInterest / 12,
+        description: 'Remaining Amount (Base Rate)'
+      });
     }
   }
   

@@ -10,7 +10,7 @@ import ChatWindow from './components/ChatWindow';
 import Layout from './components/Layout';
 import { calculateInterest } from './lib/calculations';
 import { findOptimalDistribution } from './lib/optimizationEngine';
-import { banks } from './data/banks';
+import { BANKS } from './lib/bankConstants';
 import './App.css';
 
 function App() {
@@ -47,7 +47,7 @@ function App() {
   const [isAdvancedRequirementsOpen, setIsAdvancedRequirementsOpen] = useState(false);
   
   const getBankById = (bankId) => {
-    const bank = banks.find(bank => bank.id === bankId);
+    const bank = BANKS[bankId];
     if (!bank) {
       console.warn(`Bank with ID ${bankId} not found`);
       return null;
@@ -66,6 +66,13 @@ function App() {
   // Add optimization handler
   const handleOptimize = async () => {
     setIsOptimizing(true);
+    setOptimizationProgress({
+      status: 'Starting optimization...',
+      progress: 0,
+      totalScenarios: 0,
+      currentScenario: 0
+    });
+    
     try {
       const requirements = {
         hasSalary,
@@ -88,20 +95,31 @@ function App() {
         setOptimizationProgress(progress);
       });
       
+      // Wait for optimization to complete
       const results = await findOptimalDistribution(depositAmount, requirements);
       setOptimizationResults(results);
       setCalculationResults({}); // Clear calculation results
       setHasCalculated(true); // Keep the right panel visible
     } catch (error) {
       console.error("Error in handleOptimize:", error);
-    } finally {
-      setIsOptimizing(false);
+      // Show error to user
       setOptimizationProgress({
-        status: '',
+        status: 'Error during optimization',
         progress: 0,
         totalScenarios: 0,
         currentScenario: 0
       });
+    } finally {
+      // Small delay before hiding the loading overlay
+      setTimeout(() => {
+        setIsOptimizing(false);
+        setOptimizationProgress({
+          status: '',
+          progress: 0,
+          totalScenarios: 0,
+          currentScenario: 0
+        });
+      }, 500);
     }
   };
   
@@ -125,9 +143,9 @@ function App() {
     });
     
     // Log the imported banks array
-    console.log("Imported banks array:", banks);
-    console.log("Number of banks in imported array:", banks.length);
-    console.log("Bank IDs in imported array:", banks.map(bank => bank.id));
+    console.log("Imported banks array:", BANKS);
+    console.log("Number of banks in imported array:", Object.keys(BANKS).length);
+    console.log("Bank IDs in imported array:", Object.keys(BANKS));
     
     const requirements = {
       hasSalary,
@@ -292,14 +310,40 @@ function App() {
                           <div className="mt-4">
                             <p className="text-sm text-gray-600 mb-2">Distribution:</p>
                             <div className="space-y-2">
-                              {Object.entries(result.distribution).map(([bankId, amount]) => (
-                                <div key={bankId} className="flex justify-between text-sm">
-                                  <span>{getBankById(bankId)?.name || bankId}</span>
-                                  <span>${amount.toLocaleString()}</span>
-                                </div>
-                              ))}
+                              {Object.entries(result.distribution).map(([bankId, amount]) => {
+                                const bank = getBankById(bankId);
+                                const isSalaryBank = bankId === result.salaryBankId;
+                                console.log('Rendering bank in distribution:', {
+                                  bankId,
+                                  bankName: bank?.name,
+                                  amount,
+                                  isSalaryBank,
+                                  resultSalaryBankId: result.salaryBankId,
+                                  bankRequiresSalary: bank?.requiresSalary
+                                });
+                                return (
+                                  <div key={bankId} className="flex justify-between text-sm">
+                                    <span className="flex items-center">
+                                      {bank?.name || bankId}
+                                      {isSalaryBank && (
+                                        <span className="ml-2 px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded-full">
+                                          Salary Bank
+                                        </span>
+                                      )}
+                                    </span>
+                                    <span>${amount.toLocaleString()}</span>
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
+                          {hasSalary && (
+                            <div className="mt-4 pt-4 border-t">
+                              <p className="text-sm text-gray-600">
+                                <span className="font-medium">Note:</span> Credit your salary to the bank marked as "Salary Bank" to qualify for bonus interest rates.
+                              </p>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
