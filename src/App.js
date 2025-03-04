@@ -209,7 +209,7 @@ function App() {
   
   return (
     <Layout>
-      <div className="space-y-4 !p-0 bg-gray-50 min-h-screen">
+      <div className="space-y-4 p-4 bg-gray-50 min-h-screen">
         {/* Loading Overlay */}
         {isOptimizing && (
           <div className="fixed inset-0 flex flex-col items-center justify-center bg-white/90 z-50">
@@ -243,7 +243,7 @@ function App() {
               <CardHeader className="bg-gray-100 py-2 px-3">
                 <CardTitle className="text-left text-black">Savings Calculator</CardTitle>
               </CardHeader>
-              <CardContent className="overflow-auto max-h-[80vh] px-3">
+              <CardContent className="md:overflow-auto md:max-h-[80vh] px-3">
                 <Calculator 
                   depositAmount={depositAmount}
                   setDepositAmount={setDepositAmount}
@@ -290,7 +290,7 @@ function App() {
                 <CardHeader className="bg-gray-100 py-2 px-3">
                   <CardTitle className="text-left text-black">Results</CardTitle>
                 </CardHeader>
-                <CardContent className="overflow-auto max-h-[80vh] px-3">
+                <CardContent className="md:overflow-auto md:max-h-[80vh] px-3">
                   {optimizationResults.length > 0 ? (
                     <div>
                       <h3 className="text-xl font-semibold mb-4">Optimization Results</h3>
@@ -395,7 +395,7 @@ function App() {
                 <CardHeader className="bg-gray-100 py-2 px-3">
                   <CardTitle className="text-left text-black">Results</CardTitle>
                 </CardHeader>
-                <CardContent className="flex items-center justify-center h-full">
+                <CardContent className="md:overflow-auto md:max-h-[80vh] px-3">
                   <div className="text-center p-4">
                     <h3 className="text-xl font-medium text-gray-500 mb-4">Enter your details and calculate to see bank comparison</h3>
                     <p className="text-muted-foreground">The comparison table will appear here after calculation</p>
