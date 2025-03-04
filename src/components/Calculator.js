@@ -16,6 +16,8 @@ const Calculator = ({
   setHasSalary,
   salaryAmount,
   setSalaryAmount,
+  transactionCode,
+  setTransactionCode,
   cardSpend,
   setCardSpend,
   giroCount,
@@ -46,6 +48,7 @@ const Calculator = ({
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationResults, setOptimizationResults] = useState([]);
   const [results, setResults] = useState([]);
+  const [hasTransactionCode, setHasTransactionCode] = useState(false);
 
   // Add a local formatNumber function if it's not provided as a prop
   const formatNumberLocal = (n) => {
@@ -401,6 +404,42 @@ const Calculator = ({
                         [OCBC-Specific] Grew Wealth
                       </Label>
                     </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="has-transaction-code"
+                        checked={hasTransactionCode}
+                        onCheckedChange={(checked) => {
+                          setHasTransactionCode(checked);
+                          if (!checked) setTransactionCode('');
+                        }}
+                      />
+                      <Label htmlFor="has-transaction-code" className="font-medium">
+                        Have Transaction Code
+                      </Label>
+                    </div>
+                    
+                    {hasTransactionCode && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="ml-6 space-y-2"
+                      >
+                        <Input
+                          id="transaction-code"
+                          type="text"
+                          value={transactionCode}
+                          onChange={(e) => setTransactionCode(e.target.value.toUpperCase())}
+                          placeholder="Enter transaction code"
+                          className="input-glass"
+                        />
+                        {transactionCode === 'SALA' && (
+                          <p className="text-xs text-green-600">✓ Valid transaction code for salary credit</p>
+                        )}
+                      </motion.div>
+                    )}
                   </div>
                 </div>
               </motion.div>

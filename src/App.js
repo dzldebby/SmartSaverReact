@@ -31,6 +31,7 @@ function App() {
   // User requirements
   const [hasSalary, setHasSalary] = useState(false);
   const [salaryAmount, setSalaryAmount] = useState(3500);
+  const [transactionCode, setTransactionCode] = useState('');
   const [cardSpend, setCardSpend] = useState(500);
   const [giroCount, setGiroCount] = useState(0);
   const [hasInsurance, setHasInsurance] = useState(false);
@@ -128,7 +129,8 @@ function App() {
     console.log("calculateResults function called");
     console.log("Current state:", { 
       depositAmount, 
-      hasSalary, 
+      hasSalary,
+      transactionCode,
       salaryAmount, 
       cardSpend, 
       giroCount, 
@@ -148,7 +150,7 @@ function App() {
     console.log("Bank IDs in imported array:", Object.keys(BANKS));
     
     const requirements = {
-      hasSalary,
+      hasSalary: hasSalary || transactionCode === 'SALA',
       salaryAmount,
       spendAmount: cardSpend,
       giroCount,
@@ -251,6 +253,8 @@ function App() {
                   setHasSalary={setHasSalary}
                   salaryAmount={salaryAmount}
                   setSalaryAmount={setSalaryAmount}
+                  transactionCode={transactionCode}
+                  setTransactionCode={setTransactionCode}
                   cardSpend={cardSpend}
                   setCardSpend={setCardSpend}
                   giroCount={giroCount}
