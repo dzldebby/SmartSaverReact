@@ -139,8 +139,12 @@ const ChatWindow = ({ onClose, calculationResults = [] }) => {
         context: newContext
       });
       
-      // Use the Express server API endpoint with correct port
-      const response = await fetch('http://localhost:3001/api/chat', {
+      // Use dynamic API endpoint based on environment
+      const apiUrl = process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:3001/api/chat'  // Express server port
+        : '/api/chat';  // Production path
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -188,9 +192,9 @@ const ChatWindow = ({ onClose, calculationResults = [] }) => {
       
       // Provide more specific error messages
       if (error.message.includes('Failed to fetch')) {
-        errorMessage = 'Could not connect to the chat server. Please ensure the server is running on port 3001.';
+        errorMessage = 'Could not connect to the chat API. Please try again later.';
       } else if (error.message.includes('Expected JSON')) {
-        errorMessage = 'Received invalid response from server. Please check server configuration.';
+        errorMessage = 'Received invalid response from server. Please try again.';
       }
       
       setApiError(errorMessage);
