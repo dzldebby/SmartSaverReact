@@ -1,120 +1,49 @@
 const { findOptimalDistribution } = require('./optimizationEngine');
+const fs = require('fs');
 
-// Test scenarios
-const TEST_SCENARIOS = [
-  {
-    name: 'Basic Test - $100,000 with salary',
-    amount: 100000,
-    requirements: {
-      hasSalary: true,
-      salaryAmount: 3000,
-      spendAmount: 500,
-      giroCount: 3,
-      hasInsurance: false,
-      hasInvestments: false,
-      hasHomeLoan: false,
-      increasedBalance: false,
-      grewWealth: false
-    }
-  },
-  {
-    name: 'Minimal Test - $45,000 basic requirements',
-    amount: 45000,
-    requirements: {
-      hasSalary: true,
-      salaryAmount: 2000,
-      spendAmount: 500,
-      giroCount: 0,
-      hasInsurance: false,
-      hasInvestments: false,
-      hasHomeLoan: false,
-      increasedBalance: false,
-      grewWealth: false
-    }
-  },
-  {
-    name: 'Maximum Test - $300,000 all requirements',
-    amount: 300000,
-    requirements: {
-      hasSalary: true,
-      salaryAmount: 5000,
-      spendAmount: 1000,
-      giroCount: 3,
-      hasInsurance: true,
-      insuranceAmount: 200,
-      hasInvestments: true,
-      investmentAmount: 1000,
-      hasHomeLoan: true,
-      homeLoanAmount: 2000,
-      increasedBalance: true,
-      grewWealth: true
-    }
-  }
-];
+// Create a string to hold all output
+let output = '';
 
-function formatMoney(amount) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'SGD',
-    minimumFractionDigits: 2
-  }).format(amount);
+// Helper function to log to both console and our output string
+function log(message) {
+  console.log(message);
+  output += message + '\n';
 }
 
-function formatPercent(rate) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'percent',
-    minimumFractionDigits: 2
-  }).format(rate);
-}
+async function runTest() {
+  // Test with only salary and spend
+  log('Test 1: Only Salary and Spend');
+  const requirements1 = {
+    hasSalary: true,
+    salaryAmount: 3500,
+    spendAmount: 500,
+    transactionCode: 'SALA',
+    giroCount: 0,
+    hasInsurance: false,
+    insuranceAmount: 0,
+    hasInvestments: false,
+    investmentAmount: 0,
+    hasHomeLoan: false,
+    homeLoanAmount: 0,
+    increasedBalance: false,
+    grewWealth: false
+  };
 
-function displayResults(scenario, results) {
-  console.log('\n' + '='.repeat(80));
-  console.log(`Test Scenario: ${scenario.name}`);
-  console.log('='.repeat(80));
+  log('Requirements: ' + JSON.stringify(requirements1, null, 2));
+  const results1 = await findOptimalDistribution(200000, requirements1);
   
-  results.forEach((result) => {
-    console.log(`\nRank ${result.rank} Distribution:`);
-    console.log('-'.repeat(40));
-    
-    // Display distribution
-    Object.entries(result.distribution).forEach(([bankId, amount]) => {
-      if (amount > 0) {
-        const bankName = require('./bankConstants').BANKS[bankId].name;
-        console.log(`${bankName}: ${formatMoney(amount)}`);
-      }
-    });
-    
-    // Display interest details
-    console.log('\nInterest Breakdown:');
-    Object.entries(result.breakdown).forEach(([bankId, detail]) => {
-      const bankName = require('./bankConstants').BANKS[bankId].name;
-      console.log(`${bankName}:`);
-      console.log(`  Amount: ${formatMoney(detail.amount)}`);
-      console.log(`  Interest: ${formatMoney(detail.interest)} (${formatPercent(detail.interestRate)})`);
-    });
-    
-    console.log('\nTotal Results:');
-    console.log(`Total Interest: ${formatMoney(result.totalInterest)}`);
-    console.log(`Monthly Interest: ${formatMoney(result.monthlyInterest)}`);
-    console.log(`Effective Rate: ${formatPercent(result.effectiveRate)}`);
-    console.log('\n' + '-'.repeat(80));
-  });
-}
-
-// Run all test scenarios
-function runTests() {
-  console.log('Starting optimization tests...\n');
+  log('Top result:');
+  log(JSON.stringify(results1[0], null, 2));
   
-  TEST_SCENARIOS.forEach(scenario => {
-    console.time(`${scenario.name} execution time`);
-    const results = findOptimalDistribution(scenario.amount, scenario.requirements);
-    console.timeEnd(`${scenario.name} execution time`);
-    
-    displayResults(scenario, results);
-  });
+  // Check if OCBC 360 interest is correct
+  const ocbcInterest = results1[0].breakdown['ocbc-360']?.interest || 0;
+  log(`OCBC 360 Interest: $${ocbcInterest.toFixed(2)}`);
+  
+  // Write the output to a file
+  fs.writeFileSync('optimization_test_output.txt', output);
+  log('\nOutput has been written to optimization_test_output.txt');
 }
 
-// Run if called directly
-if (require.main === module) {
-  runTests();
-} 
+runTest().catch(err => {
+  console.error('Error running test:', err);
+}); 

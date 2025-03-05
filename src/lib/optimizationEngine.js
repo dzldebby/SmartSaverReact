@@ -195,6 +195,7 @@ function dp(
 function calculateScenarioInterest(distribution, requirements) {
   try {
     console.log('Calculating interest for scenario:', distribution);
+    console.log('Using requirements:', JSON.stringify(requirements, null, 2));
     let totalInterest = 0;
     const breakdown = {};
     let salaryBankId = null;

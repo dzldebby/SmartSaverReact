@@ -92,6 +92,8 @@ function App() {
         grewWealth
       };
       
+      console.log('Optimization requirements:', requirements);
+      
       // Set up progress callback
       const { setProgressCallback } = require('./lib/optimizationEngine');
       setProgressCallback((progress) => {
@@ -339,6 +341,8 @@ function App() {
                               {Object.entries(result.distribution).map(([bankId, amount]) => {
                                 const bank = getBankById(bankId);
                                 const isSalaryBank = bankId === result.salaryBankId;
+                                const bankInterest = result.breakdown[bankId]?.interest || 0;
+                                const bankInterestRate = result.breakdown[bankId]?.interestRate || 0;
                                 console.log('Rendering bank in distribution:', {
                                   bankId,
                                   bankName: bank?.name,
@@ -348,16 +352,22 @@ function App() {
                                   bankRequiresSalary: bank?.requiresSalary
                                 });
                                 return (
-                                  <div key={bankId} className="flex justify-between text-sm">
-                                    <span className="flex items-center">
-                                      {bank?.name || bankId}
-                                      {isSalaryBank && (
-                                        <span className="ml-2 px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded-full">
-                                          Salary Bank
-                                        </span>
-                                      )}
-                                    </span>
-                                    <span>${amount.toLocaleString()}</span>
+                                  <div key={bankId} className="flex flex-col mb-2 pb-2 border-b border-gray-100">
+                                    <div className="flex justify-between text-sm">
+                                      <span className="flex items-center">
+                                        {bank?.name || bankId}
+                                        {isSalaryBank && (
+                                          <span className="ml-2 px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded-full">
+                                            Salary Bank
+                                          </span>
+                                        )}
+                                      </span>
+                                      <span>${amount.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm mt-1">
+                                      <span className="text-gray-600">Interest:</span>
+                                      <span className="font-medium">${bankInterest.toFixed(2)} ({(bankInterestRate * 100).toFixed(2)}%)</span>
+                                    </div>
                                   </div>
                                 );
                               })}

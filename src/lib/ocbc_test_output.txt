@@ -1,0 +1,39 @@
+Test with All Bonuses
+Requirements: {
+  "hasSalary": true,
+  "salaryAmount": 3500,
+  "spendAmount": 500,
+  "isSalaryBank": true,
+  "increasedBalance": true,
+  "grewWealth": true,
+  "hasInsurance": true,
+  "hasInvestments": true
+}
+OCBC 360 Interest Calculation (All Bonuses):
+-------------------------------------------
+Total Interest: $2050.00
+Effective Rate: 4.10%
+
+Expected Interest with All Bonuses:
+Base: $25.00
+Salary: $900.00
+Spend: $225.00
+Step-Up: $300.00
+Wealth: $300.00
+Grow: $300.00
+Total: $2050.00
+Rate: 4.10%
+
+Checking if all bonuses are being added:
+Breakdown from calculation:
+Base Interest: $25.00
+Salary Credit Bonus (First $25K): $300.00
+Salary Credit Bonus (Next $25K): $600.00
+Card Spend Bonus (First $25K): $75.00
+Card Spend Bonus (Next $25K): $150.00
+Step-Up Bonus (First $25K): $100.00
+Step-Up Bonus (Next $25K): $200.00
+Wealth Bonus (First $25K): $100.00
+Wealth Bonus (Next $25K): $200.00
+Grow Bonus (First $25K): $100.00
+Grow Bonus (Next $25K): $200.00

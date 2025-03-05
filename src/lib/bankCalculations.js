@@ -221,44 +221,189 @@ function calculateOCBC360(depositAmount, bankInfo, bankRequirements, addTier) {
     description: 'Base Interest'
   });
   
-  // Salary credit + spend bonus rate
-  if (bankRequirements.hasSalary && bankRequirements.spendAmount >= 500) {
-    let bonusInterest = 0;
-    if (depositAmount <= 75000) {
-      bonusInterest = depositAmount * 0.0385;
+  // Salary credit bonus
+  if (bankRequirements.hasSalary && bankRequirements.salaryAmount >= 1800) {
+    if (depositAmount <= 25000) {
+      const salaryBonus = depositAmount * 0.012;
+      totalInterest += salaryBonus;
       breakdown.push({
         amountInTier: depositAmount,
-        tierRate: 0.0385,
-        tierInterest: bonusInterest,
-        monthlyInterest: bonusInterest / 12,
-        description: 'Salary + Spend Bonus (First $75K)'
+        tierRate: 0.012,
+        tierInterest: salaryBonus,
+        monthlyInterest: salaryBonus / 12,
+        description: 'Salary Credit Bonus (First $25K)'
       });
     } else {
-      const firstTierInterest = 75000 * 0.0385;
-      const remainingAmount = Math.min(depositAmount - 75000, 75000);
-      const secondTierInterest = remainingAmount * 0.0335;
-      
+      const firstTierAmount = 25000;
+      const firstTierBonus = firstTierAmount * 0.012;
+      totalInterest += firstTierBonus;
       breakdown.push({
-        amountInTier: 75000,
-        tierRate: 0.0385,
-        tierInterest: firstTierInterest,
-        monthlyInterest: firstTierInterest / 12,
-        description: 'Salary + Spend Bonus (First $75K)'
+        amountInTier: firstTierAmount,
+        tierRate: 0.012,
+        tierInterest: firstTierBonus,
+        monthlyInterest: firstTierBonus / 12,
+        description: 'Salary Credit Bonus (First $25K)'
       });
       
-      if (remainingAmount > 0) {
-        breakdown.push({
-          amountInTier: remainingAmount,
-          tierRate: 0.0335,
-          tierInterest: secondTierInterest,
-          monthlyInterest: secondTierInterest / 12,
-          description: 'Salary + Spend Bonus (Next $75K)'
-        });
-      }
-      
-      bonusInterest = firstTierInterest + secondTierInterest;
+      const secondTierAmount = Math.min(depositAmount - 25000, 25000);
+      const secondTierBonus = secondTierAmount * 0.024;
+      totalInterest += secondTierBonus;
+      breakdown.push({
+        amountInTier: secondTierAmount,
+        tierRate: 0.024,
+        tierInterest: secondTierBonus,
+        monthlyInterest: secondTierBonus / 12,
+        description: 'Salary Credit Bonus (Next $25K)'
+      });
     }
-    totalInterest += bonusInterest;
+  }
+  
+  // Card spend bonus
+  if (bankRequirements.spendAmount >= 500) {
+    if (depositAmount <= 25000) {
+      const spendBonus = depositAmount * 0.003;
+      totalInterest += spendBonus;
+      breakdown.push({
+        amountInTier: depositAmount,
+        tierRate: 0.003,
+        tierInterest: spendBonus,
+        monthlyInterest: spendBonus / 12,
+        description: 'Card Spend Bonus (First $25K)'
+      });
+    } else {
+      const firstTierAmount = 25000;
+      const firstTierBonus = firstTierAmount * 0.003;
+      totalInterest += firstTierBonus;
+      breakdown.push({
+        amountInTier: firstTierAmount,
+        tierRate: 0.003,
+        tierInterest: firstTierBonus,
+        monthlyInterest: firstTierBonus / 12,
+        description: 'Card Spend Bonus (First $25K)'
+      });
+      
+      const secondTierAmount = Math.min(depositAmount - 25000, 25000);
+      const secondTierBonus = secondTierAmount * 0.006;
+      totalInterest += secondTierBonus;
+      breakdown.push({
+        amountInTier: secondTierAmount,
+        tierRate: 0.006,
+        tierInterest: secondTierBonus,
+        monthlyInterest: secondTierBonus / 12,
+        description: 'Card Spend Bonus (Next $25K)'
+      });
+    }
+  }
+  
+  // Increased balance bonus (Step-Up)
+  if (bankRequirements.increasedBalance) {
+    if (depositAmount <= 25000) {
+      const increaseBonus = depositAmount * 0.004;
+      totalInterest += increaseBonus;
+      breakdown.push({
+        amountInTier: depositAmount,
+        tierRate: 0.004,
+        tierInterest: increaseBonus,
+        monthlyInterest: increaseBonus / 12,
+        description: 'Step-Up Bonus (First $25K)'
+      });
+    } else {
+      const firstTierAmount = 25000;
+      const firstTierBonus = firstTierAmount * 0.004;
+      totalInterest += firstTierBonus;
+      breakdown.push({
+        amountInTier: firstTierAmount,
+        tierRate: 0.004,
+        tierInterest: firstTierBonus,
+        monthlyInterest: firstTierBonus / 12,
+        description: 'Step-Up Bonus (First $25K)'
+      });
+      
+      const secondTierAmount = Math.min(depositAmount - 25000, 25000);
+      const secondTierBonus = secondTierAmount * 0.008;
+      totalInterest += secondTierBonus;
+      breakdown.push({
+        amountInTier: secondTierAmount,
+        tierRate: 0.008,
+        tierInterest: secondTierBonus,
+        monthlyInterest: secondTierBonus / 12,
+        description: 'Step-Up Bonus (Next $25K)'
+      });
+    }
+  }
+  
+  // Wealth bonus (Invest/Insure)
+  if (bankRequirements.hasInsurance || bankRequirements.hasInvestments) {
+    if (depositAmount <= 25000) {
+      const wealthBonus = depositAmount * 0.004;
+      totalInterest += wealthBonus;
+      breakdown.push({
+        amountInTier: depositAmount,
+        tierRate: 0.004,
+        tierInterest: wealthBonus,
+        monthlyInterest: wealthBonus / 12,
+        description: 'Wealth Bonus (First $25K)'
+      });
+    } else {
+      const firstTierAmount = 25000;
+      const firstTierBonus = firstTierAmount * 0.004;
+      totalInterest += firstTierBonus;
+      breakdown.push({
+        amountInTier: firstTierAmount,
+        tierRate: 0.004,
+        tierInterest: firstTierBonus,
+        monthlyInterest: firstTierBonus / 12,
+        description: 'Wealth Bonus (First $25K)'
+      });
+      
+      const secondTierAmount = Math.min(depositAmount - 25000, 25000);
+      const secondTierBonus = secondTierAmount * 0.008;
+      totalInterest += secondTierBonus;
+      breakdown.push({
+        amountInTier: secondTierAmount,
+        tierRate: 0.008,
+        tierInterest: secondTierBonus,
+        monthlyInterest: secondTierBonus / 12,
+        description: 'Wealth Bonus (Next $25K)'
+      });
+    }
+  }
+  
+  // Grow bonus
+  if (bankRequirements.grewWealth) {
+    if (depositAmount <= 25000) {
+      const growBonus = depositAmount * 0.004;
+      totalInterest += growBonus;
+      breakdown.push({
+        amountInTier: depositAmount,
+        tierRate: 0.004,
+        tierInterest: growBonus,
+        monthlyInterest: growBonus / 12,
+        description: 'Grow Bonus (First $25K)'
+      });
+    } else {
+      const firstTierAmount = 25000;
+      const firstTierBonus = firstTierAmount * 0.004;
+      totalInterest += firstTierBonus;
+      breakdown.push({
+        amountInTier: firstTierAmount,
+        tierRate: 0.004,
+        tierInterest: firstTierBonus,
+        monthlyInterest: firstTierBonus / 12,
+        description: 'Grow Bonus (First $25K)'
+      });
+      
+      const secondTierAmount = Math.min(depositAmount - 25000, 25000);
+      const secondTierBonus = secondTierAmount * 0.008;
+      totalInterest += secondTierBonus;
+      breakdown.push({
+        amountInTier: secondTierAmount,
+        tierRate: 0.008,
+        tierInterest: secondTierBonus,
+        monthlyInterest: secondTierBonus / 12,
+        description: 'Grow Bonus (Next $25K)'
+      });
+    }
   }
   
   // Calculate effective interest rate
@@ -266,8 +411,20 @@ function calculateOCBC360(depositAmount, bankInfo, bankRequirements, addTier) {
   
   // Generate explanation
   explanation = `OCBC 360 account with $${depositAmount.toLocaleString()} deposit.`;
-  if (bankRequirements.hasSalary && bankRequirements.spendAmount >= 500) {
-    explanation += ' Salary credit and minimum spend requirements met for bonus interest.';
+  if (bankRequirements.hasSalary && bankRequirements.salaryAmount >= 1800) {
+    explanation += ` Salary credit of $${bankRequirements.salaryAmount.toLocaleString()} qualifies for bonus interest.`;
+  }
+  if (bankRequirements.spendAmount >= 500) {
+    explanation += ` Card spend of $${bankRequirements.spendAmount.toLocaleString()} qualifies for bonus interest.`;
+  }
+  if (bankRequirements.increasedBalance) {
+    explanation += ' Step-Up bonus applied.';
+  }
+  if (bankRequirements.hasInsurance || bankRequirements.hasInvestments) {
+    explanation += ' Wealth bonus applied.';
+  }
+  if (bankRequirements.grewWealth) {
+    explanation += ' Grow bonus applied.';
   }
   
   return {
