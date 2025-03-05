@@ -77,26 +77,32 @@ export default async function handler(req, res) {
     console.log('API Key available:', !!process.env.OPENAI_API_KEY);
 
     // Prepare the conversation history
-    const conversationHistory = [
-      systemMessage,
-      ...messages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }))
-    ];
+    const conversationHistory = [];
+
+    // Add system message first
+    conversationHistory.push(systemMessage);
 
     // Add calculation results as context if available
     if (calculationResults && calculationResults.length > 0) {
-      const resultsContext = {
+      conversationHistory.push({
         role: 'system',
-        content: `Current calculation results:\n${JSON.stringify(calculationResults, null, 2)}`
-      };
-      conversationHistory.push(resultsContext);
+        content: `Here are your current calculation results:\n${calculationResults.map(result => 
+          `Scenario with total interest $${result.totalInterest.toFixed(2)}:\n` +
+          Object.entries(result.breakdown).map(([bankId, data]) => 
+            `- ${bankId}: $${data.amount} (Interest: $${data.interest.toFixed(2)}, Rate: ${(data.interestRate * 100).toFixed(2)}%)`
+          ).join('\n')
+        ).join('\n\n')}`
+      });
     }
 
+    // Add user messages
+    conversationHistory.push(...messages.map(msg => ({
+      role: msg.role,
+      content: msg.content
+    })));
+
     // Call OpenAI API
-    console.log('Calling OpenAI API...');
-    console.log('OpenAI client initialized with API key:', openai.apiKey ? 'Key exists' : 'No key');
+    console.log('Calling OpenAI API with conversation history:', conversationHistory);
 
     const completion = await openai.chat.completions.create({
       model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
