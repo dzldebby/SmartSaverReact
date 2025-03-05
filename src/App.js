@@ -32,6 +32,7 @@ function App() {
   const [hasSalary, setHasSalary] = useState(false);
   const [salaryAmount, setSalaryAmount] = useState(3500);
   const [transactionCode, setTransactionCode] = useState('');
+  const [hasTransactionCode, setHasTransactionCode] = useState(false);
   const [cardSpend, setCardSpend] = useState(500);
   const [giroCount, setGiroCount] = useState(0);
   const [hasInsurance, setHasInsurance] = useState(false);
@@ -78,6 +79,7 @@ function App() {
       const requirements = {
         hasSalary,
         salaryAmount,
+        transactionCode,
         spendAmount: cardSpend,
         giroCount,
         hasInsurance,
@@ -98,6 +100,8 @@ function App() {
       
       // Wait for optimization to complete
       const results = await findOptimalDistribution(depositAmount, requirements);
+      
+      // Store all results for global maximum calculation
       setOptimizationResults(results);
       setCalculationResults({}); // Clear calculation results
       setHasCalculated(true); // Keep the right panel visible
@@ -255,6 +259,8 @@ function App() {
                   setSalaryAmount={setSalaryAmount}
                   transactionCode={transactionCode}
                   setTransactionCode={setTransactionCode}
+                  hasTransactionCode={hasTransactionCode}
+                  setHasTransactionCode={setHasTransactionCode}
                   cardSpend={cardSpend}
                   setCardSpend={setCardSpend}
                   giroCount={giroCount}
@@ -298,6 +304,22 @@ function App() {
                   {optimizationResults.length > 0 ? (
                     <div>
                       <h3 className="text-xl font-semibold mb-4">Optimization Results</h3>
+                      
+                      {/* Add Global Maximum Interest Rate Display */}
+                      <div className="mb-6 p-4 border rounded-lg bg-green-50">
+                        <h4 className="font-medium mb-2">Global Maximum Interest</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-sm text-gray-600">Annual Interest</p>
+                            <p className="text-lg font-semibold">${optimizationResults[0].totalInterest.toFixed(2)}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Effective Rate</p>
+                            <p className="text-lg font-semibold">{(optimizationResults[0].effectiveRate * 100).toFixed(2)}%</p>
+                          </div>
+                        </div>
+                      </div>
+                      
                       {optimizationResults.map((result, index) => (
                         <div key={index} className="mb-6 p-4 border rounded-lg bg-white">
                           <h4 className="font-medium mb-2">Option {index + 1}</h4>
