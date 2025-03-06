@@ -135,14 +135,35 @@ const ChatWindow = ({ onClose, calculationResults = [] }) => {
     try {
       // Try different API endpoints to see which one works
       const baseUrl = window.location.origin; // Gets the base URL (e.g., http://localhost:3002)
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       
-      // Try these endpoints in order - prioritize the ones that use OpenAI
-      const possibleEndpoints = [
-        'http://localhost:3001/api/chat', // Direct to server - uses OpenAI
-        'http://localhost:3001/chat',     // Direct to server alternative - now uses OpenAI
-        '/api/chat',                      // Standard API endpoint
-        '/chat'                           // Direct endpoint
-      ];
+      console.log('Environment info:', {
+        isMobile,
+        isLocalDevelopment,
+        userAgent: navigator.userAgent,
+        baseUrl,
+        hostname: window.location.hostname
+      });
+      
+      // For local development, prioritize direct server endpoints
+      // For production (Vercel), prioritize relative paths
+      const possibleEndpoints = isLocalDevelopment
+        ? [
+            '/api/chat',                       // Standard API endpoint (proxied in development)
+            '/api/local-chat',                 // Local chat endpoint
+            'http://localhost:3001/api/chat',  // Direct to server - uses OpenAI
+            'http://localhost:3001/chat'       // Direct to server alternative
+          ]
+        : isMobile 
+          ? [
+              '/api/chat',                     // Standard API endpoint
+              '/api/direct-chat'               // Fallback endpoint
+            ]
+          : [
+              '/api/chat',                     // Standard API endpoint
+              '/api/direct-chat'               // Fallback endpoint
+            ];
       
       let apiUrl = possibleEndpoints[0];
       let response = null;
@@ -153,7 +174,14 @@ const ChatWindow = ({ onClose, calculationResults = [] }) => {
         try {
           console.log(`Trying endpoint: ${endpoint}`);
           
-          response = await fetch(endpoint.startsWith('http') ? endpoint : `${baseUrl}${endpoint}`, {
+          // For mobile, add cache-busting parameter to avoid caching issues
+          const url = endpoint.startsWith('http') 
+            ? endpoint 
+            : `${baseUrl}${endpoint}${isMobile ? `?t=${Date.now()}` : ''}`;
+          
+          console.log(`Full URL: ${url}`);
+          
+          response = await fetch(url, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

@@ -5,98 +5,68 @@ import { OpenAI } from 'openai';
  * This is the single source of truth for the chatbot API
  */
 
-// Initialize OpenAI client
-let openai;
-try {
-  openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY, // This will be set in Vercel environment variables
-  });
-  console.log('OpenAI client initialized successfully');
-} catch (error) {
-  console.error('Error initializing OpenAI client:', error);
-}
-
-// Helper function to enable CORS
-const enableCors = (req, res) => {
+// Helper function to enable CORS for all requests
+function enableCors(req, res) {
+  // Get the request origin or default to '*'
+  const origin = req.headers.origin || '*';
+  
+  // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Origin, Cache-Control, Pragma, Expires'
   );
-};
-
-export default async function handler(req, res) {
-  // Set content type to JSON
-  res.setHeader('Content-Type', 'application/json');
-
-  // Enable CORS for all environments
-  enableCors(req, res);
-
-  // Handle preflight request
+  
+  // Handle preflight requests
   if (req.method === 'OPTIONS') {
     res.status(200).end();
+    return true;
+  }
+  return false;
+}
+
+export default async function handler(req, res) {
+  // Handle CORS preflight requests
+  if (enableCors(req, res)) {
     return;
   }
+  
+  console.log('API chat endpoint called');
+  console.log('Request method:', req.method);
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
-  // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  console.log('Chat API handler called in Vercel');
-  console.log('Environment:', process.env.NODE_ENV);
-  console.log('Vercel deployment:', !!process.env.VERCEL);
-
   try {
-    // Check if OpenAI API key is configured
-    if (!process.env.OPENAI_API_KEY) {
-      console.error('OpenAI API key is missing');
-      return res.status(200).json({
-        message: 'OpenAI API key is not configured. This is a fallback response.',
-        error: 'OpenAI API key is missing',
-        details: 'Please set OPENAI_API_KEY in your Vercel environment variables'
-      });
-    }
-
-    // Log API key information (without revealing the key)
-    console.log('API Key available:', !!process.env.OPENAI_API_KEY);
-    console.log('API Key length:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.length : 0);
-    console.log('API Key format check:', process.env.OPENAI_API_KEY ? 
-      (process.env.OPENAI_API_KEY.startsWith('sk-') ? 'Valid prefix' : 'Invalid prefix') : 'No key');
-
-    // Extract request data
     const { messages, calculationResults, context } = req.body;
+    
+    console.log('Received messages:', messages ? messages.length : 0);
+    console.log('Has calculation results:', !!calculationResults);
+    console.log('Has context:', !!context);
 
-    if (!messages || !Array.isArray(messages)) {
-      return res.status(400).json({ error: 'Messages are required and must be an array' });
-    }
-
-    // Debug logging
-    console.log('Request data:', {
-      messageCount: messages.length,
-      hasCalculationResults: !!calculationResults,
-      hasContext: !!context
+    // Initialize OpenAI client
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
     });
 
-    // If OpenAI client is not initialized, return a fallback response
-    if (!openai) {
-      return res.status(200).json({
-        message: 'OpenAI client is not initialized. This is a fallback response.',
-        received: {
-          messages: messages.map(msg => ({ role: msg.role, content: msg.content.substring(0, 50) + (msg.content.length > 50 ? '...' : '') })),
-          calculationResults: calculationResults ? 'Provided' : 'Not provided',
-          context: context ? 'Provided' : 'Not provided'
-        }
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OPENAI_API_KEY is not defined');
+      return res.status(200).json({ 
+        message: "I'm sorry, but the OpenAI API key is not configured. Please set up your API key in the environment variables.",
+        error: 'OpenAI API key is missing',
+        status: 'error'
       });
     }
 
-    // Prepare conversation history
-    const conversationHistory = [];
-
-    // Add system message with context
-    conversationHistory.push({
+    // Prepare system message with context and calculation results
+    const systemMessage = {
       role: 'system',
       content: `You are a helpful banking assistant that specializes in explaining interest rates and savings accounts.
       You have access to the user's calculation results for various bank accounts.
@@ -127,9 +97,11 @@ export default async function handler(req, res) {
       5. Don't make assumptions about which bank is best - use only the calculated results.
       
       Be concise, friendly, and provide specific advice based on the calculation results and user context when available.`
-    });
+    };
 
     // Add calculation results as context if available
+    let conversationHistory = [systemMessage];
+    
     if (calculationResults && calculationResults.length > 0) {
       // Find the bank with the highest interest
       const sortedBanks = calculationResults
@@ -152,10 +124,9 @@ export default async function handler(req, res) {
     }
 
     // Add user messages
-    conversationHistory.push(...messages.map(msg => ({
-      role: msg.role,
-      content: msg.content
-    })));
+    if (messages && Array.isArray(messages)) {
+      conversationHistory = conversationHistory.concat(messages);
+    }
 
     console.log('Calling OpenAI API...');
 
@@ -166,34 +137,34 @@ export default async function handler(req, res) {
         messages: conversationHistory,
         temperature: 0.7,
         max_tokens: 500,
-        top_p: 1,
-        frequency_penalty: 0,
-        presence_penalty: 0
       });
 
       console.log('OpenAI API response received');
 
-      if (completion.choices && completion.choices[0]) {
-        return res.status(200).json({ message: completion.choices[0].message.content });
+      if (completion.choices && completion.choices.length > 0) {
+        return res.status(200).json({ 
+          message: completion.choices[0].message.content,
+          status: 'success'
+        });
       } else {
         throw new Error('No response from OpenAI');
       }
     } catch (apiError) {
       console.error('OpenAI API Error:', apiError);
       
-      // Return a fallback response instead of an error
+      // Provide a fallback response with the error details
       return res.status(200).json({
-        message: `I'm sorry, I couldn't process your request through our AI system. Here's what I understand: You asked about "${messages[messages.length - 1].content.substring(0, 50)}...". Please try again later or contact support if this issue persists.`,
-        error: apiError.message
+        message: `I'm sorry, I couldn't process your request through our AI system. Please try again later.`,
+        error: apiError.message,
+        status: 'error'
       });
     }
   } catch (error) {
     console.error('Error in chat API:', error);
-    
-    // Return a fallback response instead of an error
     return res.status(200).json({ 
-      message: "I'm sorry, I encountered an unexpected error. Please try again later or contact support if this issue persists.",
-      error: error.message
+      message: "I'm sorry, I encountered an unexpected error. Please try again later.",
+      error: error.message,
+      status: 'error'
     });
   }
 } 

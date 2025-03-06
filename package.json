@@ -44,7 +44,10 @@
     "test:api": "npm install node-fetch && node src/lib/testApiConnection.js",
     "test:cors": "npm install node-fetch && node src/lib/testCors.js",
     "test:routes": "npm install node-fetch && node src/lib/testApiRoutes.js",
-    "test:openai": "node src/lib/testOpenAI.js"
+    "test:openai": "node src/lib/testOpenAI.js",
+    "test:openai-key": "node scripts/test-openai.js",
+    "test:api-endpoints": "npm install node-fetch && node --experimental-modules scripts/test-api.js",
+    "test:api-simple": "node scripts/test-api-simple.js"
   },
   "eslintConfig": {
     "extends": [

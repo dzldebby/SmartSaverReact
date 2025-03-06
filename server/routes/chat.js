@@ -28,6 +28,15 @@ router.post('/', async (req, res) => {
       });
     }
 
+    // Check if OpenAI client is initialized
+    if (!openai) {
+      console.error('OpenAI client is not initialized');
+      return res.status(500).json({
+        error: 'Failed to initialize OpenAI client',
+        details: 'Please check the server logs for more information'
+      });
+    }
+
     const { messages, calculationResults, context } = req.body;
 
     if (!messages || !Array.isArray(messages)) {

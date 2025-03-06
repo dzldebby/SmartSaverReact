@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile API Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 16px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .status {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .error {
+            color: #f44336;
+        }
+        .loading {
+            color: #2196F3;
+        }
+        .endpoint {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .device-info {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mobile API Test</h1>
+        
+        <div class="card">
+            <div class="device-info" id="deviceInfo">Loading device info...</div>
+        </div>
+        
+        <div class="card">
+            <div class="endpoint">/api/test Endpoint</div>
+            <button id="testApiBtn">Test API</button>
+            <div class="status" id="testStatus">Ready</div>
+            <pre id="testResult">No results yet</pre>
+        </div>
+        
+        <div class="card">
+            <div class="endpoint">/api/chat Endpoint</div>
+            <button id="chatApiBtn">Test Chat API</button>
+            <div class="status" id="chatStatus">Ready</div>
+            <pre id="chatResult">No results yet</pre>
+        </div>
+        
+        <div class="card">
+            <div class="endpoint">/api/direct-chat Endpoint</div>
+            <button id="directChatApiBtn">Test Direct Chat API</button>
+            <div class="status" id="directChatStatus">Ready</div>
+            <pre id="directChatResult">No results yet</pre>
+        </div>
+        
+        <div class="card">
+            <div class="endpoint">/api/local-chat Endpoint</div>
+            <button id="localChatApiBtn">Test Local Chat API</button>
+            <div class="status" id="localChatStatus">Ready</div>
+            <pre id="localChatResult">No results yet</pre>
+        </div>
+        
+        <div class="card">
+            <div class="endpoint">Direct Server Endpoints</div>
+            <button id="directServerBtn">Test Direct Server</button>
+            <div class="status" id="directServerStatus">Ready</div>
+            <pre id="directServerResult">No results yet</pre>
+        </div>
+    </div>
+
+    <script>
+        // Display device information
+        function showDeviceInfo() {
+            const deviceInfo = document.getElementById('deviceInfo');
+            const info = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                vendor: navigator.vendor,
+                screenWidth: window.innerWidth,
+                screenHeight: window.innerHeight,
+                pixelRatio: window.devicePixelRatio,
+                isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+            };
+            
+            deviceInfo.innerHTML = `
+                <strong>User Agent:</strong> ${info.userAgent}<br>
+                <strong>Platform:</strong> ${info.platform}<br>
+                <strong>Vendor:</strong> ${info.vendor}<br>
+                <strong>Screen:</strong> ${info.screenWidth}x${info.screenHeight} (Pixel Ratio: ${info.pixelRatio})<br>
+                <strong>Is Mobile:</strong> ${info.isMobile}
+            `;
+        }
+        
+        // Test the /api/test endpoint
+        async function testApi() {
+            const statusEl = document.getElementById('testStatus');
+            const resultEl = document.getElementById('testResult');
+            
+            try {
+                statusEl.className = 'status loading';
+                statusEl.textContent = 'Testing...';
+                
+                // Add cache-busting parameter
+                const timestamp = Date.now();
+                const response = await fetch(`/api/test?t=${timestamp}`, {
+                    method: 'GET',
+                    headers: {
+                        // Remove cache-control headers that might cause CORS issues
+                    }
+                });
+                
+                const data = await response.json();
+                
+                statusEl.className = 'status success';
+                statusEl.textContent = 'Success!';
+                resultEl.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = 'Error!';
+                resultEl.textContent = error.toString();
+                console.error('API Test Error:', error);
+            }
+        }
+        
+        // Test the /api/chat endpoint
+        async function testChatApi() {
+            const statusEl = document.getElementById('chatStatus');
+            const resultEl = document.getElementById('chatResult');
+            
+            try {
+                statusEl.className = 'status loading';
+                statusEl.textContent = 'Testing...';
+                
+                // Add cache-busting parameter
+                const timestamp = Date.now();
+                const response = await fetch(`/api/chat?t=${timestamp}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Remove cache-control headers that might cause CORS issues
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            {
+                                role: 'user',
+                                content: 'Hello, this is a test message from mobile.'
+                            }
+                        ],
+                        calculationResults: [],
+                        context: {}
+                    })
+                });
+                
+                const data = await response.json();
+                
+                statusEl.className = 'status success';
+                statusEl.textContent = 'Success!';
+                resultEl.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = 'Error!';
+                resultEl.textContent = error.toString();
+                console.error('Chat API Test Error:', error);
+            }
+        }
+        
+        // Test the /api/direct-chat endpoint
+        async function testDirectChatApi() {
+            const statusEl = document.getElementById('directChatStatus');
+            const resultEl = document.getElementById('directChatResult');
+            
+            try {
+                statusEl.className = 'status loading';
+                statusEl.textContent = 'Testing...';
+                
+                // Add cache-busting parameter
+                const timestamp = Date.now();
+                const response = await fetch(`/api/direct-chat?t=${timestamp}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Remove cache-control headers that might cause CORS issues
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            {
+                                role: 'user',
+                                content: 'Hello, this is a test message from mobile.'
+                            }
+                        ],
+                        calculationResults: [],
+                        context: {}
+                    })
+                });
+                
+                const data = await response.json();
+                
+                statusEl.className = 'status success';
+                statusEl.textContent = 'Success!';
+                resultEl.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = 'Error!';
+                resultEl.textContent = error.toString();
+                console.error('Direct Chat API Test Error:', error);
+            }
+        }
+        
+        // Test the /api/local-chat endpoint
+        async function testLocalChatApi() {
+            const statusEl = document.getElementById('localChatStatus');
+            const resultEl = document.getElementById('localChatResult');
+            
+            try {
+                statusEl.className = 'status loading';
+                statusEl.textContent = 'Testing...';
+                
+                // Add cache-busting parameter
+                const timestamp = Date.now();
+                const response = await fetch(`/api/local-chat?t=${timestamp}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Remove cache-control headers that might cause CORS issues
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            {
+                                role: 'user',
+                                content: 'Hello, this is a test message from mobile.'
+                            }
+                        ],
+                        calculationResults: [],
+                        context: {}
+                    })
+                });
+                
+                const data = await response.json();
+                
+                statusEl.className = 'status success';
+                statusEl.textContent = 'Success!';
+                resultEl.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = 'Error!';
+                resultEl.textContent = error.toString();
+                console.error('Local Chat API Test Error:', error);
+            }
+        }
+        
+        // Test direct server endpoints
+        async function testDirectServer() {
+            const statusEl = document.getElementById('directServerStatus');
+            const resultEl = document.getElementById('directServerResult');
+            
+            try {
+                statusEl.className = 'status loading';
+                statusEl.textContent = 'Testing...';
+                
+                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const endpoints = [
+                    'http://localhost:3001/api/chat',
+                    'http://localhost:3001/chat'
+                ];
+                
+                let results = '<h3>Direct Server Test Results:</h3>';
+                
+                if (!isLocalhost) {
+                    results += '<p class="error">Not running on localhost. Direct server endpoints are only available in local development.</p>';
+                    statusEl.className = 'status error';
+                    statusEl.textContent = 'Not applicable';
+                    resultEl.innerHTML = results;
+                    return;
+                }
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        results += `<p>Testing endpoint: ${endpoint}...</p>`;
+                        
+                        const response = await fetch(endpoint, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                // Remove cache-control headers that might cause CORS issues
+                            },
+                            body: JSON.stringify({
+                                messages: [
+                                    {
+                                        role: 'user',
+                                        content: 'Hello, this is a test message from mobile.'
+                                    }
+                                ],
+                                calculationResults: [],
+                                context: {}
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            results += `<p class="success">✅ ${endpoint}: Success (${response.status})</p>`;
+                            results += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                        } else {
+                            const errorText = await response.text();
+                            results += `<p class="error">❌ ${endpoint}: Failed (${response.status})</p>`;
+                            results += `<pre>${errorText.substring(0, 200)}${errorText.length > 200 ? '...' : ''}</pre>`;
+                        }
+                    } catch (error) {
+                        results += `<p class="error">❌ ${endpoint}: Error - ${error.message}</p>`;
+                    }
+                    
+                    results += '<hr>';
+                }
+                
+                statusEl.className = 'status success';
+                statusEl.textContent = 'Completed';
+                resultEl.innerHTML = results;
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = 'Error!';
+                resultEl.textContent = error.toString();
+                console.error('Direct Server Test Error:', error);
+            }
+        }
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            showDeviceInfo();
+            
+            document.getElementById('testApiBtn').addEventListener('click', testApi);
+            document.getElementById('chatApiBtn').addEventListener('click', testChatApi);
+            document.getElementById('directChatApiBtn').addEventListener('click', testDirectChatApi);
+            document.getElementById('localChatApiBtn').addEventListener('click', testLocalChatApi);
+            document.getElementById('directServerBtn').addEventListener('click', testDirectServer);
+        });
+    </script>
+</body>
+</html> 

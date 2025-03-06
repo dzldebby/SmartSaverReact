@@ -1,9 +1,9 @@
 /**
- * Direct chat API endpoint that uses OpenAI
- * This is a fallback for testing when the main chat API isn't working
+ * Local development API endpoint that forwards requests to the local server
+ * This is used for testing in local development
  */
 
-// Direct chat API endpoint that uses OpenAI
+// Local chat API endpoint that uses OpenAI
 import { OpenAI } from 'openai';
 
 // Helper function to enable CORS for all requests
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
     return;
   }
   
-  console.log('Direct chat API endpoint called');
+  console.log('Local chat API endpoint called');
   console.log('Request method:', req.method);
   
   if (req.method === 'OPTIONS') {
@@ -73,11 +73,8 @@ export default async function handler(req, res) {
     const systemMessage = {
       role: 'system',
       content: `You are a helpful banking assistant that specializes in explaining interest rates and savings accounts. 
-      Be concise, friendly, and provide specific advice based on the user's questions.
-      
-      ${calculationResults && calculationResults.length > 0 ? 
-        `The user has performed some calculations for different bank accounts.` : 
-        'The user has not performed any calculations yet.'}`
+      You are currently running in local development mode.
+      Be concise, friendly, and provide specific advice based on the user's questions.`
     };
 
     // Combine system message with user messages
@@ -103,7 +100,8 @@ export default async function handler(req, res) {
       if (completion.choices && completion.choices.length > 0) {
         return res.status(200).json({ 
           message: completion.choices[0].message.content,
-          status: 'success'
+          status: 'success',
+          environment: 'local'
         });
       } else {
         throw new Error('No response from OpenAI');
@@ -115,15 +113,17 @@ export default async function handler(req, res) {
       return res.status(200).json({
         message: `I'm sorry, I couldn't process your request through our AI system. Please try again later.`,
         error: apiError.message,
-        status: 'error'
+        status: 'error',
+        environment: 'local'
       });
     }
   } catch (error) {
-    console.error('Error in direct chat API:', error);
+    console.error('Error in local chat API:', error);
     return res.status(200).json({ 
       message: "I'm sorry, I encountered an unexpected error. Please try again later.",
       error: error.message,
-      status: 'error'
+      status: 'error',
+      environment: 'local'
     });
   }
 } 
