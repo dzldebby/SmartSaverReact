@@ -552,7 +552,7 @@ def format_number(n):
 
 def show_interest_rates_page(banks_data):
     st.title("Bank Interest Rates")
-    st.write("Current interest rates and requirements for supported banks. Updated as of 16 Jan 2025.")
+    st.write("Current interest rates and requirements for supported banks. Updated as of 16 Jan 2024.")
     
     # Convert banks_data dictionary to a list of records
     records = []

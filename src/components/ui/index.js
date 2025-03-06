@@ -10,4 +10,5 @@ export { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs.tsx';
 export { Avatar } from './avatar.tsx';
 export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select.tsx';
 export { Tooltip } from './tooltip.jsx';
-export { InfoTooltip } from './info-tooltip.jsx'; 
+export { InfoTooltip } from './info-tooltip.jsx';
+export { FeedbackForm } from './feedback-form.jsx'; 
