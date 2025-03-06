@@ -46,13 +46,8 @@ export default async function handler(req, res) {
   }
 
   console.log('Chat API handler called in Vercel');
-  console.log('Request headers:', req.headers);
-  console.log('Request body:', req.body);
   console.log('Environment:', process.env.NODE_ENV);
   console.log('Vercel deployment:', !!process.env.VERCEL);
-  console.log('Vercel environment:', process.env.VERCEL_ENV);
-  console.log('Request URL:', req.url);
-  console.log('Request method:', req.method);
 
   try {
     // Check if OpenAI API key is configured
@@ -72,7 +67,7 @@ export default async function handler(req, res) {
       (process.env.OPENAI_API_KEY.startsWith('sk-') ? 'Valid prefix' : 'Invalid prefix') : 'No key');
 
     // Extract request data
-    const { messages, calculationResults, context } = req.body || {};
+    const { messages, calculationResults, context } = req.body;
 
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ error: 'Messages are required and must be an array' });
@@ -80,7 +75,7 @@ export default async function handler(req, res) {
 
     // Debug logging
     console.log('Request data:', {
-      messageCount: messages ? messages.length : 0,
+      messageCount: messages.length,
       hasCalculationResults: !!calculationResults,
       hasContext: !!context
     });
@@ -90,7 +85,7 @@ export default async function handler(req, res) {
       return res.status(200).json({
         message: 'OpenAI client is not initialized. This is a fallback response.',
         received: {
-          messages: messages ? messages.map(msg => ({ role: msg.role, content: msg.content.substring(0, 50) + (msg.content.length > 50 ? '...' : '') })) : [],
+          messages: messages.map(msg => ({ role: msg.role, content: msg.content.substring(0, 50) + (msg.content.length > 50 ? '...' : '') })),
           calculationResults: calculationResults ? 'Provided' : 'Not provided',
           context: context ? 'Provided' : 'Not provided'
         }
@@ -157,15 +152,12 @@ export default async function handler(req, res) {
     }
 
     // Add user messages
-    if (messages && Array.isArray(messages)) {
-      conversationHistory.push(...messages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      })));
-    }
+    conversationHistory.push(...messages.map(msg => ({
+      role: msg.role,
+      content: msg.content
+    })));
 
     console.log('Calling OpenAI API...');
-    console.log('Conversation history length:', conversationHistory.length);
 
     try {
       // Call OpenAI API
@@ -191,7 +183,7 @@ export default async function handler(req, res) {
       
       // Return a fallback response instead of an error
       return res.status(200).json({
-        message: `I'm sorry, I couldn't process your request through our AI system. Here's what I understand: You asked about "${messages && messages.length > 0 ? messages[messages.length - 1].content.substring(0, 50) + '...' : 'No message found'}". Please try again later or contact support if this issue persists.`,
+        message: `I'm sorry, I couldn't process your request through our AI system. Here's what I understand: You asked about "${messages[messages.length - 1].content.substring(0, 50)}...". Please try again later or contact support if this issue persists.`,
         error: apiError.message
       });
     }

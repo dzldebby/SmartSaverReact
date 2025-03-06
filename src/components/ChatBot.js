@@ -45,27 +45,14 @@ const ChatBot = () => {
     try {
       // Try different API endpoints to see which one works
       const baseUrl = window.location.origin; // Gets the base URL (e.g., http://localhost:3002)
-      const isProduction = baseUrl.includes('vercel.app') || !baseUrl.includes('localhost');
       
-      // Use different endpoints based on environment
-      const possibleEndpoints = isProduction
-        ? [
-            // In production (Vercel), only use relative paths
-            '/api/chat',           // Standard API endpoint
-            '/chat',               // Direct endpoint
-            '/api/direct-chat'     // Fallback endpoint
-          ]
-        : [
-            // In development, try direct server connections first
-            'http://localhost:3001/api/chat', // Direct to server - uses OpenAI
-            'http://localhost:3001/chat',     // Direct to server alternative - uses OpenAI
-            '/api/chat',                      // Standard API endpoint
-            '/chat',                          // Direct endpoint
-            '/api/direct-chat'                // Fallback endpoint
-          ];
-      
-      console.log('Running in', isProduction ? 'production' : 'development', 'mode');
-      console.log('Using endpoints:', possibleEndpoints);
+      // Try these endpoints in order - prioritize the ones that use OpenAI
+      const possibleEndpoints = [
+        'http://localhost:3001/api/chat', // Direct to server - uses OpenAI
+        'http://localhost:3001/chat',     // Direct to server alternative - now uses OpenAI
+        '/api/chat',                      // Standard API endpoint
+        '/chat'                           // Direct endpoint
+      ];
       
       let apiUrl = possibleEndpoints[0];
       let response = null;
@@ -113,14 +100,14 @@ const ChatBot = () => {
       console.log('API response data:', data);
       
       // Add bot response
-      const botMessage = {
-        id: Date.now().toString(),
-        role: 'assistant',
+    const botMessage = {
+      id: Date.now().toString(),
+      role: 'assistant',
         content: data.message,
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, botMessage]);
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, botMessage]);
     } catch (error) {
       console.error('Error in chat:', error);
       

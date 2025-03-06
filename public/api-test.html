@@ -215,27 +215,15 @@
       const resultDiv = document.getElementById('testAllEndpointsResult');
       resultDiv.innerHTML = '<p>Testing all endpoints...</p>';
       
-      const isProduction = baseUrl.includes('vercel.app') || !baseUrl.includes('localhost');
-      
-      // Use different endpoints based on environment
-      const endpoints = isProduction
-        ? [
-            // In production (Vercel), only use relative paths
-            '/api/chat',           // Standard API endpoint
-            '/chat',               // Direct endpoint
-            '/api/direct-chat'     // Fallback endpoint
-          ]
-        : [
-            // In development, try direct server connections first
-            'http://localhost:3001/api/chat', // Direct to server - uses OpenAI
-            'http://localhost:3001/chat',     // Direct to server alternative - uses OpenAI
-            '/api/chat',                      // Standard API endpoint
-            '/chat',                          // Direct endpoint
-            '/api/direct-chat'                // Fallback endpoint
-          ];
+      const endpoints = [
+        'http://localhost:3001/api/chat', // Direct to server - uses OpenAI
+        'http://localhost:3001/chat',     // Direct to server alternative - now uses OpenAI
+        '/api/chat',                      // Standard API endpoint
+        '/chat',                          // Direct endpoint
+        '/api/direct-chat'                // Fallback endpoint
+      ];
       
       let results = '<h3>Endpoint Test Results:</h3>';
-      results += `<p>Running in ${isProduction ? 'production' : 'development'} mode</p>`;
       
       for (const endpoint of endpoints) {
         try {
