@@ -472,7 +472,7 @@ const Calculator = ({
               disabled={isCalculating}
               className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-blue-300"
             >
-              {isCalculating ? 'Calculating...' : 'Calculate interest for a single bank'}
+              {isCalculating ? 'Calculating...' : 'Calculate interest'}
             </button>
             <button
               type="button"
@@ -480,7 +480,7 @@ const Calculator = ({
               disabled={isOptimizing}
               className="flex-1 bg-purple-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:bg-green-300"
             >
-              {isOptimizing ? 'Optimizing...' : 'Find best strategy across multiple banks'}
+              {isOptimizing ? 'Optimizing...' : 'Find best strategy'}
             </button>
           </div>
         </div>
@@ -495,7 +495,6 @@ const Calculator = ({
           )}
         </div>
       </div>
-      <Footer />
     </>
   );
 };

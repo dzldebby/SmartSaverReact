@@ -12,6 +12,7 @@ import { calculateInterest } from './lib/calculations';
 import { findOptimalDistribution } from './lib/optimizationEngine';
 import { BANKS } from './lib/bankConstants';
 import './App.css';
+import Footer from './components/Footer';
 
 function App() {
   const [selectedBanks, setSelectedBanks] = useState([]);
@@ -419,6 +420,7 @@ function App() {
                   )}
                 </CardContent>
               </Card>
+              <Footer />
             </motion.div>
           ) : (
             <motion.div
@@ -436,7 +438,9 @@ function App() {
                     <h3 className="text-xl font-medium text-gray-500 mb-4">Enter your details and calculate to see bank comparison</h3>
                     <p className="text-muted-foreground">The comparison table will appear here after calculation</p>
                   </div>
+                  <Footer />
                 </CardContent>
+                
               </Card>
             </motion.div>
           )}
