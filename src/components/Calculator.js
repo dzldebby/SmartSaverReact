@@ -244,7 +244,7 @@ const Calculator = ({
                       <Input
                         id="giro-count"
                         type="number"
-                        value={giroCount || ''}
+                        value={giroCount}
                         onChange={(e) => handleNumericInput(e.target.value, setGiroCount)}
                         className="input-glass"
                         min="0"

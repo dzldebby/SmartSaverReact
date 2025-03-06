@@ -229,6 +229,45 @@
     @apply rounded-md;
   }
 
+  /* Add a new class for the View Breakdown button with purple gradient */
+  .breakdown-button {
+    position: relative;
+    overflow: hidden;
+    @apply rounded-md px-3 py-1.5 text-white font-medium;
+    background: linear-gradient(135deg, hsl(246, 84%, 59%), hsl(262, 84%, 67%));
+    transition: all 0.2s ease;
+  }
+
+  .breakdown-button:hover {
+    transform: translateY(-2px);
+    @apply shadow-lg;
+    background: linear-gradient(135deg, hsl(246, 84%, 65%), hsl(262, 84%, 73%));
+  }
+
+  .breakdown-button:active {
+    transform: translateY(0);
+  }
+
+  .breakdown-button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+  }
+
+  .breakdown-button:active::after {
+    opacity: 0.3;
+    transform: scale(50, 50) translate(-50%);
+    transition: all 0.5s;
+  }
+
   .interactive-button:hover {
     transform: translateY(-2px);
     @apply shadow-lg;

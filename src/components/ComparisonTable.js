@@ -305,7 +305,7 @@ const ComparisonTable = ({ results, getBankById }) => {
                         </td>
                         <td>
                           <button 
-                            className="interactive-button flex items-center"
+                            className="breakdown-button flex items-center"
                             onClick={() => toggleBreakdown(result.bankId)}
                           >
                             <span>View Breakdown</span>
