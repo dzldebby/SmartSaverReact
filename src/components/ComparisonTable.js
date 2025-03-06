@@ -340,7 +340,7 @@ const ComparisonTable = ({ results, getBankById }) => {
               </table>
 
               {/* Mobile Table */}
-              <div className="md:hidden space-y-4">
+              <div className="md:hidden space-y-4 pt-4">
                 {results.map((result) => {
                   const bank = getBankById(result.bankId);
                   const isExpanded = expandedBreakdowns[result.bankId] || false;
