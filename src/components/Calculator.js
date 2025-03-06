@@ -455,15 +455,15 @@ const Calculator = ({
             disabled={isCalculating}
             className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-blue-300"
           >
-            {isCalculating ? 'Calculating...' : 'Calculate'}
+            {isCalculating ? 'Calculating...' : 'Calculate interest for a single bank'}
           </button>
           <button
             type="button"
             onClick={handleOptimize}
             disabled={isOptimizing}
-            className="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:bg-green-300"
+            className="flex-1 bg-purple-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:bg-green-300"
           >
-            {isOptimizing ? 'Optimizing...' : 'Optimize Scenario'}
+            {isOptimizing ? 'Optimizing...' : 'Find best strategy across multiple banks'}
           </button>
         </div>
       </div>
