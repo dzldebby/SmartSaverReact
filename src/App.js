@@ -204,7 +204,7 @@ function App() {
       
       // MODIFIED: Select all banks for data processing
       const allBankIds = results.map(result => result.bankId);
-      console.log("Selecting all banks:", allBankIds);
+      console.log("Selectingall banks:", allBankIds);
       setSelectedBanks(allBankIds);
     
     // Collapse both sections after calculation
