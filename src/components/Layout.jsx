@@ -23,10 +23,7 @@ const Layout = ({ children }) => {
           <main>
             {children}
           </main>
-          
-          <footer className="mt-16 pt-8 border-t border-gray-200 text-center text-sm text-muted-foreground">
-            <p>© {new Date().getFullYear()} SmartSaver. All rights reserved.</p>
-          </footer>
+
         </motion.div>
       </div>
       

@@ -8,6 +8,7 @@ const ComparisonTable = ({ results, getBankById }) => {
   const [expandedBreakdowns, setExpandedBreakdowns] = useState({});
   const [expandedMobileDetails, setExpandedMobileDetails] = useState({});
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+  const [shouldShimmer, setShouldShimmer] = useState(true);
   const tableRef = useRef(null);
 
   const toggleBreakdown = (bankId) => {
@@ -247,42 +248,110 @@ const ComparisonTable = ({ results, getBankById }) => {
   useEffect(() => {
     // Show scroll indicator for 2 seconds when results change
     setShowScrollIndicator(true);
+    setShouldShimmer(true);
     const timer = setTimeout(() => {
       setShowScrollIndicator(false);
+      setShouldShimmer(false);
     }, 2000);
 
     return () => clearTimeout(timer);
   }, [results]);
 
   return (
-    <Card className="glass-card shimmer">
-      <CardHeader className="bg-purple-700 text-white py-2">
-        <CardTitle className="text-center text-white">Bank Comparison Table</CardTitle>
-      </CardHeader>
-      <CardContent className="p-3">
-        <div className="relative">
-          <div className="overflow-x-auto" ref={tableRef}>
-            {/* Desktop Table - Hidden on Mobile */}
-            <table className="fancy-table hidden md:table">
-              <thead>
-                <tr>
-                  <th className="text-left">Bank</th>
-                  <th className="text-right">Interest Rate</th>
-                  <th className="text-right">Monthly Interest</th>
-                  <th className="text-right">Annual Interest</th>
-                  <th className="text-left">Interest Breakdown</th>
-                </tr>
-              </thead>
-              <tbody>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Card className={`glass-card ${shouldShimmer ? 'shimmer' : ''}`}>
+        <CardHeader className="bg-purple-700 text-white py-2">
+          <CardTitle className="text-center text-white">Bank Comparison Table</CardTitle>
+        </CardHeader>
+        <CardContent className="p-3">
+          <div className="relative">
+            <div className="overflow-x-auto" ref={tableRef}>
+              {/* Desktop Table - Hidden on Mobile */}
+              <table className="fancy-table hidden md:table">
+                <thead>
+                  <tr>
+                    <th className="text-left">Bank</th>
+                    <th className="text-right">Interest Rate</th>
+                    <th className="text-right">Monthly Interest</th>
+                    <th className="text-right">Annual Interest</th>
+                    <th className="text-left">Interest Breakdown</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {results.map((result) => {
+                    const bank = getBankById(result.bankId);
+                    const isExpanded = expandedBreakdowns[result.bankId] || false;
+                    const manualBreakdown = generateManualBreakdown(result);
+                    
+                    return (
+                      <React.Fragment key={result.bankId}>
+                        <tr className={isExpanded ? "bg-primary/5" : ""}>
+                          <td>
+                            <div className="flex items-center space-x-2">
+                              <div
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
+                                style={{ 
+                                  background: `linear-gradient(135deg, ${bank?.color || '#888888'}, ${bank?.color ? bank.color + '99' : '#666666'})` 
+                                }}
+                              >
+                                {bank?.name.charAt(0)}
+                              </div>
+                              <span className="font-medium">{bank?.name}</span>
+                            </div>
+                          </td>
+                          <td className="text-right font-medium">
+                            <span className="text-primary font-bold">
+                              {result.interestRate ? (result.interestRate * 100).toFixed(2) : '0.00'}%
+                            </span>
+                          </td>
+                          <td className="text-right font-medium">
+                            ${result.monthlyInterest ? result.monthlyInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                          </td>
+                          <td className="text-right font-medium">
+                            <span className="text-lg">${result.annualInterest ? result.annualInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</span>
+                          </td>
+                          <td>
+                            <button 
+                              className="breakdown-button flex items-center"
+                              onClick={() => toggleBreakdown(result.bankId)}
+                            >
+                              <span>View Breakdown</span>
+                              {isExpanded ? <ChevronUp size={16} className="ml-1" /> : <ChevronDown size={16} className="ml-1" />}
+                            </button>
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr className="bg-primary/5">
+                            <td colSpan={5}>
+                              <div className="glossy-surface m-2 p-3 space-y-3 animate-in fade-in">
+                                <InterestBreakdown breakdown={manualBreakdown || []} />
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+
+              {/* Mobile Table */}
+              <div className="md:hidden space-y-4">
                 {results.map((result) => {
                   const bank = getBankById(result.bankId);
                   const isExpanded = expandedBreakdowns[result.bankId] || false;
+                  const isMobileExpanded = expandedMobileDetails[result.bankId] || false;
                   const manualBreakdown = generateManualBreakdown(result);
-                  
+
                   return (
-                    <React.Fragment key={result.bankId}>
-                      <tr className={isExpanded ? "bg-primary/5" : ""}>
-                        <td>
+                    <div key={result.bankId} className="bg-white rounded-lg shadow-sm border">
+                      <div className="p-3">
+                        {/* Bank and Interest Rate Row */}
+                        <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center space-x-2">
                             <div
                               className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
@@ -294,138 +363,78 @@ const ComparisonTable = ({ results, getBankById }) => {
                             </div>
                             <span className="font-medium">{bank?.name}</span>
                           </div>
-                        </td>
-                        <td className="text-right font-medium">
                           <span className="text-primary font-bold">
                             {result.interestRate ? (result.interestRate * 100).toFixed(2) : '0.00'}%
                           </span>
-                        </td>
-                        <td className="text-right font-medium">
-                          ${result.monthlyInterest ? result.monthlyInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
-                        </td>
-                        <td className="text-right font-medium">
-                          <span className="text-lg">${result.annualInterest ? result.annualInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</span>
-                        </td>
-                        <td>
-                          <button 
-                            className="breakdown-button flex items-center"
-                            onClick={() => toggleBreakdown(result.bankId)}
-                          >
-                            <span>View Breakdown</span>
-                            {isExpanded ? <ChevronUp size={16} className="ml-1" /> : <ChevronDown size={16} className="ml-1" />}
-                          </button>
-                        </td>
-                      </tr>
-                      {isExpanded && (
-                        <tr className="bg-primary/5">
-                          <td colSpan={5}>
-                            <div className="glossy-surface m-2 p-3 space-y-3 animate-in fade-in">
-                              <InterestBreakdown breakdown={manualBreakdown || []} />
+                        </div>
+
+                        {/* Expandable Details Button */}
+                        <button 
+                          className="w-full text-left text-sm text-gray-600 flex items-center justify-between py-1"
+                          onClick={() => toggleMobileDetails(result.bankId)}
+                        >
+                          <span>View Details</span>
+                          {isMobileExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </button>
+
+                        {/* Expanded Details */}
+                        {isMobileExpanded && (
+                          <div className="pt-2 space-y-2 border-t mt-2">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600">Monthly Interest:</span>
+                              <span className="font-medium">
+                                ${result.monthlyInterest ? result.monthlyInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                              </span>
                             </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600">Annual Interest:</span>
+                              <span className="font-medium">
+                                ${result.annualInterest ? result.annualInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                              </span>
+                            </div>
+                            <button 
+                              className="w-full text-left text-sm text-blue-600 flex items-center justify-between py-1 mt-2"
+                              onClick={() => toggleBreakdown(result.bankId)}
+                            >
+                              <span>Interest Breakdown</span>
+                              {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            </button>
+                            {isExpanded && (
+                              <div className="glossy-surface mt-2 p-3 space-y-3 animate-in fade-in">
+                                <InterestBreakdown breakdown={manualBreakdown || []} />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   );
                 })}
-              </tbody>
-            </table>
-
-            {/* Mobile Table */}
-            <div className="md:hidden space-y-4">
-              {results.map((result) => {
-                const bank = getBankById(result.bankId);
-                const isExpanded = expandedBreakdowns[result.bankId] || false;
-                const isMobileExpanded = expandedMobileDetails[result.bankId] || false;
-                const manualBreakdown = generateManualBreakdown(result);
-
-                return (
-                  <div key={result.bankId} className="bg-white rounded-lg shadow-sm border">
-                    <div className="p-3">
-                      {/* Bank and Interest Rate Row */}
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2">
-                          <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
-                            style={{ 
-                              background: `linear-gradient(135deg, ${bank?.color || '#888888'}, ${bank?.color ? bank.color + '99' : '#666666'})` 
-                            }}
-                          >
-                            {bank?.name.charAt(0)}
-                          </div>
-                          <span className="font-medium">{bank?.name}</span>
-                        </div>
-                        <span className="text-primary font-bold">
-                          {result.interestRate ? (result.interestRate * 100).toFixed(2) : '0.00'}%
-                        </span>
-                      </div>
-
-                      {/* Expandable Details Button */}
-                      <button 
-                        className="w-full text-left text-sm text-gray-600 flex items-center justify-between py-1"
-                        onClick={() => toggleMobileDetails(result.bankId)}
-                      >
-                        <span>View Details</span>
-                        {isMobileExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                      </button>
-
-                      {/* Expanded Details */}
-                      {isMobileExpanded && (
-                        <div className="pt-2 space-y-2 border-t mt-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Monthly Interest:</span>
-                            <span className="font-medium">
-                              ${result.monthlyInterest ? result.monthlyInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Annual Interest:</span>
-                            <span className="font-medium">
-                              ${result.annualInterest ? result.annualInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
-                            </span>
-                          </div>
-                          <button 
-                            className="w-full text-left text-sm text-blue-600 flex items-center justify-between py-1 mt-2"
-                            onClick={() => toggleBreakdown(result.bankId)}
-                          >
-                            <span>Interest Breakdown</span>
-                            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                          </button>
-                          {isExpanded && (
-                            <div className="glossy-surface mt-2 p-3 space-y-3 animate-in fade-in">
-                              <InterestBreakdown breakdown={manualBreakdown || []} />
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+              </div>
             </div>
-          </div>
-          
-          {/* Mobile Scroll Indicator */}
-          <AnimatePresence>
-            {showScrollIndicator && (
-              <motion.div 
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0 }}
-                className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/20 p-2 rounded-l-lg md:hidden"
-              >
-                <motion.div
-                  animate={{ x: [0, 10, 0] }}
-                  transition={{ repeat: Infinity, duration: 1 }}
+            
+            {/* Mobile Scroll Indicator */}
+            <AnimatePresence>
+              {showScrollIndicator && (
+                <motion.div 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/20 p-2 rounded-l-lg md:hidden"
                 >
-                  <ChevronRight className="w-6 h-6 text-white" />
+                  <motion.div
+                    animate={{ x: [0, 10, 0] }}
+                    transition={{ repeat: Infinity, duration: 1 }}
+                  >
+                    <ChevronRight className="w-6 h-6 text-white" />
+                  </motion.div>
                 </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </CardContent>
-    </Card>
+              )}
+            </AnimatePresence>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 };
 
