@@ -6,11 +6,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const ComparisonTable = ({ results, getBankById }) => {
   const [expandedBreakdowns, setExpandedBreakdowns] = useState({});
+  const [expandedMobileDetails, setExpandedMobileDetails] = useState({});
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const tableRef = useRef(null);
 
   const toggleBreakdown = (bankId) => {
     setExpandedBreakdowns(prev => ({
+      ...prev,
+      [bankId]: !prev[bankId]
+    }));
+  };
+
+  const toggleMobileDetails = (bankId) => {
+    setExpandedMobileDetails(prev => ({
       ...prev,
       [bankId]: !prev[bankId]
     }));
@@ -254,7 +262,8 @@ const ComparisonTable = ({ results, getBankById }) => {
       <CardContent className="p-3">
         <div className="relative">
           <div className="overflow-x-auto" ref={tableRef}>
-            <table className="fancy-table">
+            {/* Desktop Table - Hidden on Mobile */}
+            <table className="fancy-table hidden md:table">
               <thead>
                 <tr>
                   <th className="text-left">Bank</th>
@@ -269,12 +278,6 @@ const ComparisonTable = ({ results, getBankById }) => {
                   const bank = getBankById(result.bankId);
                   const isExpanded = expandedBreakdowns[result.bankId] || false;
                   const manualBreakdown = generateManualBreakdown(result);
-                  
-                  // Test 5: Check what InterestBreakdown receives
-                  console.log("Test 5 - InterestBreakdown Props:", {
-                    breakdown: manualBreakdown,
-                    groupedBreakdown: getGroupedBreakdown(manualBreakdown)
-                  });
                   
                   return (
                     <React.Fragment key={result.bankId}>
@@ -327,6 +330,79 @@ const ComparisonTable = ({ results, getBankById }) => {
                 })}
               </tbody>
             </table>
+
+            {/* Mobile Table */}
+            <div className="md:hidden space-y-4">
+              {results.map((result) => {
+                const bank = getBankById(result.bankId);
+                const isExpanded = expandedBreakdowns[result.bankId] || false;
+                const isMobileExpanded = expandedMobileDetails[result.bankId] || false;
+                const manualBreakdown = generateManualBreakdown(result);
+
+                return (
+                  <div key={result.bankId} className="bg-white rounded-lg shadow-sm border">
+                    <div className="p-3">
+                      {/* Bank and Interest Rate Row */}
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
+                            style={{ 
+                              background: `linear-gradient(135deg, ${bank?.color || '#888888'}, ${bank?.color ? bank.color + '99' : '#666666'})` 
+                            }}
+                          >
+                            {bank?.name.charAt(0)}
+                          </div>
+                          <span className="font-medium">{bank?.name}</span>
+                        </div>
+                        <span className="text-primary font-bold">
+                          {result.interestRate ? (result.interestRate * 100).toFixed(2) : '0.00'}%
+                        </span>
+                      </div>
+
+                      {/* Expandable Details Button */}
+                      <button 
+                        className="w-full text-left text-sm text-gray-600 flex items-center justify-between py-1"
+                        onClick={() => toggleMobileDetails(result.bankId)}
+                      >
+                        <span>View Details</span>
+                        {isMobileExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </button>
+
+                      {/* Expanded Details */}
+                      {isMobileExpanded && (
+                        <div className="pt-2 space-y-2 border-t mt-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Monthly Interest:</span>
+                            <span className="font-medium">
+                              ${result.monthlyInterest ? result.monthlyInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Annual Interest:</span>
+                            <span className="font-medium">
+                              ${result.annualInterest ? result.annualInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                            </span>
+                          </div>
+                          <button 
+                            className="w-full text-left text-sm text-blue-600 flex items-center justify-between py-1 mt-2"
+                            onClick={() => toggleBreakdown(result.bankId)}
+                          >
+                            <span>Interest Breakdown</span>
+                            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                          </button>
+                          {isExpanded && (
+                            <div className="glossy-surface mt-2 p-3 space-y-3 animate-in fade-in">
+                              <InterestBreakdown breakdown={manualBreakdown || []} />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
           
           {/* Mobile Scroll Indicator */}
