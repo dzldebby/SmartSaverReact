@@ -40,7 +40,11 @@
     "start": "set PORT=3002 && craco start",
     "build": "craco build",
     "test": "craco test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "test:api": "npm install node-fetch && node src/lib/testApiConnection.js",
+    "test:cors": "npm install node-fetch && node src/lib/testCors.js",
+    "test:routes": "npm install node-fetch && node src/lib/testApiRoutes.js",
+    "test:openai": "node src/lib/testOpenAI.js"
   },
   "eslintConfig": {
     "extends": [

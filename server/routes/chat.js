@@ -2,6 +2,18 @@ const express = require('express');
 const router = express.Router();
 const openai = require('../config/openai');
 
+// Log all requests to this route
+router.use((req, res, next) => {
+  console.log('Chat API route accessed:', {
+    method: req.method,
+    path: req.path,
+    url: req.url,
+    body: req.body,
+    headers: req.headers
+  });
+  next();
+});
+
 router.post('/', async (req, res) => {
   console.log('Chat API route handler called');
   console.log('Request body:', req.body);
@@ -63,8 +75,6 @@ router.post('/', async (req, res) => {
       Be concise, friendly, and provide specific advice based on the calculation results and user context when available.`
     });
 
-    // Remove the generic bank information section since we want to focus on actual results
-    
     // Add calculation results as context if available
     if (calculationResults && calculationResults.length > 0) {
       // Find the bank with the highest interest

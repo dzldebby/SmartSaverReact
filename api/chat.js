@@ -1,12 +1,23 @@
 import { OpenAI } from 'openai';
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY, // This will be set in .env.local
-});
+/**
+ * Chatbot API handler for Vercel serverless deployment
+ * This is the single source of truth for the chatbot API
+ */
 
-export default async function handler(req, res) {
-  // Enable CORS
+// Initialize OpenAI client
+let openai;
+try {
+  openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY, // This will be set in Vercel environment variables
+  });
+  console.log('OpenAI client initialized successfully');
+} catch (error) {
+  console.error('Error initializing OpenAI client:', error);
+}
+
+// Helper function to enable CORS
+const enableCors = (req, res) => {
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -14,6 +25,14 @@ export default async function handler(req, res) {
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
   );
+};
+
+export default async function handler(req, res) {
+  // Set content type to JSON
+  res.setHeader('Content-Type', 'application/json');
+
+  // Enable CORS for all environments
+  enableCors(req, res);
 
   // Handle preflight request
   if (req.method === 'OPTIONS') {
@@ -21,105 +40,160 @@ export default async function handler(req, res) {
     return;
   }
 
-  console.log('API route handler called');
-  console.log('Request method:', req.method);
-  console.log('Request URL:', req.url);
-  console.log('Environment variables:', {
-    OPENAI_API_KEY_EXISTS: !!process.env.OPENAI_API_KEY,
-    OPENAI_API_KEY_LENGTH: process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.length : 0,
-    NODE_ENV: process.env.NODE_ENV
-  });
-
+  // Only allow POST requests
   if (req.method !== 'POST') {
-    console.log('Method not allowed:', req.method);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  console.log('Chat API handler called in Vercel');
+  console.log('Environment:', process.env.NODE_ENV);
+  console.log('Vercel deployment:', !!process.env.VERCEL);
+
   try {
-    const { messages, calculationResults } = req.body;
+    // Check if OpenAI API key is configured
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OpenAI API key is missing');
+      return res.status(200).json({
+        message: 'OpenAI API key is not configured. This is a fallback response.',
+        error: 'OpenAI API key is missing',
+        details: 'Please set OPENAI_API_KEY in your Vercel environment variables'
+      });
+    }
+
+    // Log API key information (without revealing the key)
+    console.log('API Key available:', !!process.env.OPENAI_API_KEY);
+    console.log('API Key length:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.length : 0);
+    console.log('API Key format check:', process.env.OPENAI_API_KEY ? 
+      (process.env.OPENAI_API_KEY.startsWith('sk-') ? 'Valid prefix' : 'Invalid prefix') : 'No key');
+
+    // Extract request data
+    const { messages, calculationResults, context } = req.body;
 
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ error: 'Messages are required and must be an array' });
     }
 
-    // Debug information
-    console.log('Request received:', {
+    // Debug logging
+    console.log('Request data:', {
       messageCount: messages.length,
       hasCalculationResults: !!calculationResults,
-      OPENAI_API_KEY_EXISTS: !!process.env.OPENAI_API_KEY,
-      OPENAI_API_KEY_LENGTH: process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.length : 0,
+      hasContext: !!context
     });
 
-    // Prepare system message with context
-    const systemMessage = {
-      role: 'system',
-      content: `You are a helpful banking assistant that specializes in explaining interest rates and savings accounts. 
-      You have access to the user's calculation results for various bank accounts.
-      ${calculationResults ? `The user has calculated interest for the following banks: ${calculationResults.map(r => r.bankId).join(', ')}` : 'The user has not performed any calculations yet.'}
-      Be concise, friendly, and provide specific advice based on the calculation results when available.
-      
-      Here's information about the main banks:
-      1. UOB One: Offers tiered interest rates (3.00% on first $75K, 4.50% on next $50K, 6.00% on next $25K) with salary + $500 card spend.
-      2. OCBC 360: Offers 2.00% on first $75K and 4.00% on next $25K with salary of $1,800+, plus 0.60% for $500 card spend.
-      3. SC BonusSaver: Offers 1.00% for salary credit of $3,000+ and 1.00% for card spend of $1,000+.
-      4. DBS Multiplier: Offers 1.80% on first $50,000 with one category (like salary), higher rates with more categories.
-      5. BOC SmartSaver: Has tiered base interest (0.15%-0.40%) plus bonuses: 2.50% for salary of $2,000+, 0.50-0.80% for card spend, 0.90% for bill payments, and 2.40% Wealth Bonus for insurance.`
-    };
-
-    // Check if API key is available
-    if (!process.env.OPENAI_API_KEY) {
-      console.error('OpenAI API key is missing');
-      return res.status(500).json({
-        error: 'OpenAI API key is missing. Please set OPENAI_API_KEY in your environment variables.'
+    // If OpenAI client is not initialized, return a fallback response
+    if (!openai) {
+      return res.status(200).json({
+        message: 'OpenAI client is not initialized. This is a fallback response.',
+        received: {
+          messages: messages.map(msg => ({ role: msg.role, content: msg.content.substring(0, 50) + (msg.content.length > 50 ? '...' : '') })),
+          calculationResults: calculationResults ? 'Provided' : 'Not provided',
+          context: context ? 'Provided' : 'Not provided'
+        }
       });
     }
 
-    console.log('API Key available:', !!process.env.OPENAI_API_KEY);
+    // Prepare conversation history
+    const conversationHistory = [];
 
-    // Prepare the conversation history
-    const conversationHistory = [
-      systemMessage,
-      ...messages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }))
-    ];
+    // Add system message with context
+    conversationHistory.push({
+      role: 'system',
+      content: `You are a helpful banking assistant that specializes in explaining interest rates and savings accounts.
+      You have access to the user's calculation results for various bank accounts.
+      
+      ${calculationResults && calculationResults.length > 0 ? 
+        `Based on the user's calculations:
+        ${calculationResults.map(result => {
+          const bankId = result.bankId || 'unknown';
+          const totalInterest = parseFloat(result.totalInterest || result.annualInterest || 0);
+          const interestRate = parseFloat(result.interestRate || 0);
+          
+          return `- ${bankId}: Total Annual Interest: $${totalInterest.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (Rate: ${(interestRate * 100).toFixed(2)}%)`;
+        }).join('\n        ')}`
+        : 'The user has not performed any calculations yet.'}
+      
+      ${context ? `Current user context:
+      ${context.depositAmount ? `- Deposit amount: $${context.depositAmount.toLocaleString()}` : ''}
+      ${context.hasSalary ? `- Has salary credit${context.salaryAmount ? `: $${context.salaryAmount.toLocaleString()}` : ''}` : ''}
+      ${context.hasSpending ? `- Has card spending${context.spendingAmount ? `: $${context.spendingAmount.toLocaleString()}` : ''}` : ''}
+      ${context.hasInsurance ? '- Has insurance products' : ''}
+      ${context.hasBillPayments ? '- Has bill payments/GIRO' : ''}` : ''}
+      
+      Important instructions:
+      1. ALWAYS refer to the actual calculation results when discussing interest rates and amounts.
+      2. If a specific bank shows better results in the calculations, mention that instead of giving generic advice.
+      3. Be precise with numbers - use the exact interest amounts and rates from the calculations.
+      4. If Chocolate bank or any other bank shows higher interest than traditional banks, make sure to highlight that.
+      5. Don't make assumptions about which bank is best - use only the calculated results.
+      
+      Be concise, friendly, and provide specific advice based on the calculation results and user context when available.`
+    });
 
     // Add calculation results as context if available
     if (calculationResults && calculationResults.length > 0) {
-      const resultsContext = {
-        role: 'system',
-        content: `Current calculation results:\n${JSON.stringify(calculationResults, null, 2)}`
-      };
-      conversationHistory.push(resultsContext);
+      // Find the bank with the highest interest
+      const sortedBanks = calculationResults
+        .filter(result => (parseFloat(result.totalInterest || result.annualInterest || 0) > 0))
+        .sort((a, b) => {
+          const interestA = parseFloat(a.totalInterest || a.annualInterest || 0);
+          const interestB = parseFloat(b.totalInterest || b.annualInterest || 0);
+          return interestB - interestA;
+        });
+
+      if (sortedBanks.length > 0) {
+        conversationHistory.push({
+          role: 'system',
+          content: `Current best options based on calculations:
+          1. ${sortedBanks[0].bankId}: $${parseFloat(sortedBanks[0].totalInterest || sortedBanks[0].annualInterest || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} annual interest
+          ${sortedBanks.length > 1 ? `2. ${sortedBanks[1].bankId}: $${parseFloat(sortedBanks[1].totalInterest || sortedBanks[1].annualInterest || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} annual interest` : ''}
+          ${sortedBanks.length > 2 ? `3. ${sortedBanks[2].bankId}: $${parseFloat(sortedBanks[2].totalInterest || sortedBanks[2].annualInterest || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} annual interest` : ''}`
+        });
+      }
     }
 
-    // Call OpenAI API
+    // Add user messages
+    conversationHistory.push(...messages.map(msg => ({
+      role: msg.role,
+      content: msg.content
+    })));
+
     console.log('Calling OpenAI API...');
-    console.log('OpenAI client initialized with API key:', openai.apiKey ? 'Key exists' : 'No key');
 
-    const completion = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
-      messages: conversationHistory,
-      temperature: 0.7,
-      max_tokens: 500,
-      top_p: 1,
-      frequency_penalty: 0,
-      presence_penalty: 0,
-    });
+    try {
+      // Call OpenAI API
+      const completion = await openai.chat.completions.create({
+        model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
+        messages: conversationHistory,
+        temperature: 0.7,
+        max_tokens: 500,
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0
+      });
 
-    console.log('OpenAI API response received');
-    
-    // Return the assistant's message
-    return res.status(200).json({
-      message: completion.choices[0].message.content
-    });
+      console.log('OpenAI API response received');
 
+      if (completion.choices && completion.choices[0]) {
+        return res.status(200).json({ message: completion.choices[0].message.content });
+      } else {
+        throw new Error('No response from OpenAI');
+      }
+    } catch (apiError) {
+      console.error('OpenAI API Error:', apiError);
+      
+      // Return a fallback response instead of an error
+      return res.status(200).json({
+        message: `I'm sorry, I couldn't process your request through our AI system. Here's what I understand: You asked about "${messages[messages.length - 1].content.substring(0, 50)}...". Please try again later or contact support if this issue persists.`,
+        error: apiError.message
+      });
+    }
   } catch (error) {
-    console.error('OpenAI API Error:', error);
-    return res.status(500).json({
-      error: 'Error calling OpenAI API',
-      details: error.message
+    console.error('Error in chat API:', error);
+    
+    // Return a fallback response instead of an error
+    return res.status(200).json({ 
+      message: "I'm sorry, I encountered an unexpected error. Please try again later or contact support if this issue persists.",
+      error: error.message
     });
   }
 } 

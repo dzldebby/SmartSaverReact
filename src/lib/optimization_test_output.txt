@@ -1,0 +1,76 @@
+Test 1: Only Salary and Spend
+Requirements: {
+  "hasSalary": true,
+  "salaryAmount": 3500,
+  "spendAmount": 500,
+  "transactionCode": "SALA",
+  "giroCount": 0,
+  "hasInsurance": false,
+  "insuranceAmount": 0,
+  "hasInvestments": false,
+  "investmentAmount": 0,
+  "hasHomeLoan": false,
+  "homeLoanAmount": 0,
+  "increasedBalance": false,
+  "grewWealth": false
+}
+Top result:
+{
+  "distribution": {
+    "uob-one": 150000,
+    "ocbc-360": 0,
+    "sc-bonussaver": 0,
+    "chocolate": 0,
+    "boc-smartsaver": 50000
+  },
+  "totalInterest": 7627.5,
+  "effectiveRate": 0.0381375,
+  "monthlyInterest": 635.625,
+  "breakdown": {
+    "uob-one": {
+      "amount": 150000,
+      "interest": 6000,
+      "interestRate": 0.04,
+      "breakdown": [
+        {
+          "amountInTier": 75000,
+          "tierRate": 0.03,
+          "tierInterest": 2250,
+          "monthlyInterest": 187.5,
+          "description": "First $75K (Salary + Spend)"
+        },
+        {
+          "amountInTier": 50000,
+          "tierRate": 0.045,
+          "tierInterest": 2250,
+          "monthlyInterest": 187.5,
+          "description": "Next $50K (Salary + Spend)"
+        },
+        {
+          "amountInTier": 25000,
+          "tierRate": 0.06,
+          "tierInterest": 1500,
+          "monthlyInterest": 125,
+          "description": "Next $25K (Salary + Spend)"
+        }
+      ],
+      "isSalaryBank": true,
+      "isActualSalaryBank": false
+    },
+    "boc-smartsaver": {
+      "amount": 50000,
+      "interest": 1627.5,
+      "interestRate": 0.0326,
+      "breakdown": [],
+      "isSalaryBank": true,
+      "isActualSalaryBank": true
+    }
+  },
+  "interestPerBank": {
+    "uob-one": 6000,
+    "boc-smartsaver": 1627.5
+  },
+  "salaryBankId": "boc-smartsaver",
+  "hasUOBSalaryEquivalent": true
+}
+OCBC 360 Interest: $0.00

@@ -42,76 +42,93 @@ const ChatBot = () => {
     setInput('');
     setIsLoading(true);
 
-    // Simulate AI response (this would be replaced with an actual API call)
-    setTimeout(() => {
-      generateBotResponse(userMessage.content);
+    try {
+      // Try different API endpoints to see which one works
+      const baseUrl = window.location.origin; // Gets the base URL (e.g., http://localhost:3002)
+      
+      // Try these endpoints in order - prioritize the ones that use OpenAI
+      const possibleEndpoints = [
+        'http://localhost:3001/api/chat', // Direct to server - uses OpenAI
+        'http://localhost:3001/chat',     // Direct to server alternative - now uses OpenAI
+        '/api/chat',                      // Standard API endpoint
+        '/chat'                           // Direct endpoint
+      ];
+      
+      let apiUrl = possibleEndpoints[0];
+      let response = null;
+      let error = null;
+      
+      // Try each endpoint until one works
+      for (const endpoint of possibleEndpoints) {
+        try {
+          console.log(`Trying endpoint: ${endpoint}`);
+          
+          response = await fetch(endpoint.startsWith('http') ? endpoint : `${baseUrl}${endpoint}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              messages: messages.concat(userMessage).map(msg => ({
+                role: msg.role,
+                content: msg.content
+              })),
+              calculationResults: [], // Add calculation results if available
+              context: {} // Add context if available
+            }),
+          });
+          
+          console.log(`Response from ${endpoint}:`, response.status);
+          
+          if (response.ok) {
+            apiUrl = endpoint;
+            console.log(`Successfully connected to: ${apiUrl}`);
+            break;
+          }
+        } catch (err) {
+          console.error(`Error with endpoint ${endpoint}:`, err);
+          error = err;
+        }
+      }
+      
+      // If no endpoint worked, throw the last error
+      if (!response || !response.ok) {
+        throw error || new Error('All API endpoints failed');
+      }
+      
+      const data = await response.json();
+      console.log('API response data:', data);
+      
+      // Add bot response
+      const botMessage = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: data.message,
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Error in chat:', error);
+      
+      // Show error message as bot response
+      const errorMessage = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `I'm sorry, I encountered an error: ${error.message}. Please try again later.`,
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+      
+      toast({
+        title: "Error",
+        description: "Failed to get response from the assistant.",
+        type: "error",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1500);
-  };
-
-  const generateBotResponse = (userInput) => {
-    // This is a mock implementation
-    // In a real app, this would call an API like GPT or a custom backend
-    
-    const lowercasedInput = userInput.toLowerCase();
-    let response = '';
-    
-    if (lowercasedInput.includes('mortgage') || lowercasedInput.includes('home loan')) {
-      response = "Mortgage rates are typically lower than other loan types because they're secured by your home. Currently, rates range from 6.4% to 7.0% for a 30-year fixed rate mortgage. The exact rate you'll get depends on your credit score, down payment, and debt-to-income ratio.";
-      toast({
-        title: "Mortgage Information",
-        description: "I've provided current mortgage rate information.",
-        type: "success",
-      });
-    } else if (lowercasedInput.includes('credit score') || lowercasedInput.includes('fico')) {
-      response = "Your credit score significantly impacts the interest rates you receive. Generally, scores above 740 get the best rates. For each 20-point drop below 740, you might see rates increase by 0.2-0.4%. To improve your score, pay bills on time, keep credit card balances low, and avoid applying for new credit before taking out a major loan.";
-      toast({
-        title: "Credit Score Information",
-        description: "I've provided information about credit scores and interest rates.",
-        type: "success",
-      });
-    } else if (lowercasedInput.includes('refinance') || lowercasedInput.includes('refinancing')) {
-      response = "Refinancing can make sense if you can lower your rate by at least 0.5-1% or shorten your loan term. Consider the closing costs (typically 2-5% of the loan amount) and how long you plan to stay in your home. If you'll save more in interest than you'll pay in closing costs during the time you own the home, refinancing is usually worthwhile.";
-      toast({
-        title: "Refinancing Information",
-        description: "I've provided information about when refinancing makes sense.",
-        type: "success",
-      });
-    } else if (lowercasedInput.includes('savings') || lowercasedInput.includes('high yield')) {
-      response = "Online banks generally offer higher interest rates on savings accounts than traditional banks. Currently, the best high-yield savings accounts offer around 0.7-1.5% APY, compared to the national average of about 0.01%. Look for accounts with no monthly fees and check if they're FDIC insured.";
-      toast({
-        title: "Savings Account Information",
-        description: "I've provided information about high-yield savings accounts.",
-        type: "success",
-      });
-    } else if (lowercasedInput.includes('compare') || lowercasedInput.includes('difference')) {
-      response = "When comparing loan offers, don't just look at the interest rate. Consider the APR, which includes fees. Also compare the total cost over the life of the loan, including closing costs. Sometimes a slightly higher rate with lower fees can be better if you don't plan to keep the loan for its full term.";
-      toast({
-        title: "Loan Comparison Tips",
-        description: "I've provided tips for comparing loan offers.",
-        type: "success",
-      });
-    } else if (lowercasedInput.includes('apr') || lowercasedInput.includes('apy')) {
-      response = "APR (Annual Percentage Rate) includes both the interest rate and fees, giving you the true cost of borrowing. APY (Annual Percentage Yield) shows the total return on savings accounts, including compound interest. When borrowing, look for a lower APR; when saving, look for a higher APY.";
-      toast({
-        title: "APR vs APY",
-        description: "I've explained the difference between APR and APY.",
-        type: "success",
-      });
-    } else if (lowercasedInput.includes('hello') || lowercasedInput.includes('hi') || lowercasedInput.includes('hey')) {
-      response = "Hello! I'm here to help with any questions about banking, interest rates, loans, or financial planning. What would you like to know?";
-    } else {
-      response = "I'd be happy to help with your finance and banking questions. You can ask me about different loan types, how interest rates work, tips for improving your credit score, or strategies for comparing financial products between different banks.";
     }
-    
-    const botMessage = {
-      id: Date.now().toString(),
-      role: 'assistant',
-      content: response,
-      timestamp: new Date()
-    };
-    
-    setMessages(prev => [...prev, botMessage]);
   };
 
   return (

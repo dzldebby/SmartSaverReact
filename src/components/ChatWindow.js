@@ -133,50 +133,61 @@ const ChatWindow = ({ onClose, calculationResults = [] }) => {
     setApiError(null);
     
     try {
-      console.log("Sending chat message with:", {
-        messages: updatedMessages,
-        calculationResults,
-        context: newContext
-      });
+      // Try different API endpoints to see which one works
+      const baseUrl = window.location.origin; // Gets the base URL (e.g., http://localhost:3002)
       
-      // Use dynamic API endpoint based on environment
-      const apiUrl = process.env.NODE_ENV === 'development' 
-        ? 'http://localhost:3001/api/chat'  // Express server port
-        : '/api/chat';  // Production path
+      // Try these endpoints in order - prioritize the ones that use OpenAI
+      const possibleEndpoints = [
+        'http://localhost:3001/api/chat', // Direct to server - uses OpenAI
+        'http://localhost:3001/chat',     // Direct to server alternative - now uses OpenAI
+        '/api/chat',                      // Standard API endpoint
+        '/chat'                           // Direct endpoint
+      ];
       
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: updatedMessages.map(msg => ({
-            role: msg.role,
-            content: msg.content
-          })),
-          calculationResults: calculationResults.map(result => ({
-            bankId: result.bankId || '',
-            totalInterest: parseFloat(result.totalInterest || 0),
-            annualInterest: parseFloat(result.annualInterest || 0),
-            monthlyInterest: parseFloat(result.monthlyInterest || 0),
-            interestRate: parseFloat(result.interestRate || 0)
-          })).filter(result => result.totalInterest > 0 || result.annualInterest > 0),
-          context: newContext
-        })
-      });
-
-      // Check if response is JSON before trying to parse it
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error(`Expected JSON response but got ${contentType}`);
+      let apiUrl = possibleEndpoints[0];
+      let response = null;
+      let error = null;
+      
+      // Try each endpoint until one works
+      for (const endpoint of possibleEndpoints) {
+        try {
+          console.log(`Trying endpoint: ${endpoint}`);
+          
+          response = await fetch(endpoint.startsWith('http') ? endpoint : `${baseUrl}${endpoint}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              messages: updatedMessages.map(msg => ({
+                role: msg.role,
+                content: msg.content
+              })),
+              calculationResults,
+              context: newContext
+            }),
+          });
+          
+          console.log(`Response from ${endpoint}:`, response.status);
+          
+          if (response.ok) {
+            apiUrl = endpoint;
+            console.log(`Successfully connected to: ${apiUrl}`);
+            break;
+          }
+        } catch (err) {
+          console.error(`Error with endpoint ${endpoint}:`, err);
+          error = err;
+        }
+      }
+      
+      // If no endpoint worked, throw the last error
+      if (!response || !response.ok) {
+        throw error || new Error('All API endpoints failed');
       }
       
       const data = await response.json();
-      console.log("API response:", data);
-      
-      if (!response.ok) {
-        throw new Error(data.error || `API request failed with status ${response.status}`);
-      }
+      console.log('API response data:', data);
       
       if (data && data.message) {
         setMessages([
@@ -187,7 +198,7 @@ const ChatWindow = ({ onClose, calculationResults = [] }) => {
         throw new Error('Invalid response format from API');
       }
     } catch (error) {
-      console.error("Error in chat:", error);
+      console.error('Error in chat:', error);
       let errorMessage = error.message;
       
       // Provide more specific error messages
