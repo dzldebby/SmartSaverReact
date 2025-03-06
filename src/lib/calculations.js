@@ -477,6 +477,23 @@ function calculateOCBC360(depositAmount, bankInfo, bankRequirements, addTier) {
     }
   }
   
+  // Grew Wealth bonus (maintain average daily balance of at least $200,000)
+  if (bankRequirements.grewWealth && depositAmount >= 200000) {
+    // First $75K at 2.40%
+    const firstTierAmount = Math.min(eligibleAmount, 75000);
+    if (firstTierAmount > 0) {
+      totalInterest += addTier(firstTierAmount, 0.024, 'Grew Wealth Bonus (First $75K) - 2.40%');
+    }
+    
+    // Next $25K at 2.40%
+    if (eligibleAmount > 75000) {
+      const nextTierAmount = Math.min(eligibleAmount - 75000, 25000);
+      if (nextTierAmount > 0) {
+        totalInterest += addTier(nextTierAmount, 0.024, 'Grew Wealth Bonus (Next $25K) - 2.40%');
+      }
+    }
+  }
+  
   // Spend bonus (>= $500)
   if (bankRequirements.spendAmount >= 500) {
     // First $75K at 0.60%
@@ -538,6 +555,9 @@ function calculateOCBC360(depositAmount, bankInfo, bankRequirements, addTier) {
   }
   if (bankRequirements.increasedBalance) {
     explanation += ' Account balance increased by at least $500 from last month.';
+  }
+  if (bankRequirements.grewWealth && depositAmount >= 200000) {
+    explanation += ' Maintaining average daily balance of at least $200,000 qualifies for Grew Wealth bonus.';
   }
   if (bankRequirements.spendAmount >= 500) {
     explanation += ` Card spend of $${bankRequirements.spendAmount.toLocaleString()} qualifies for bonus interest.`;

@@ -8,4 +8,6 @@ export { Checkbox } from './checkbox.tsx';
 export { Label } from './label.tsx';
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs.tsx';
 export { Avatar } from './avatar.tsx';
-export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select.tsx'; 
+export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select.tsx';
+export { Tooltip } from './tooltip.jsx';
+export { InfoTooltip } from './info-tooltip.jsx'; 

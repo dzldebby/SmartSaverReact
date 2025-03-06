@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Wallet, BadgePercent, PiggyBank, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
-import { Card, CardContent, Checkbox, Label, Input, Slider, Button } from './ui';
+import { Card, CardContent, Checkbox, Label, Input, Slider, Button, Tooltip } from './ui';
 import { calculateInterest } from '../lib/calculations';
 import { findOptimalDistribution } from '../lib/optimizationEngine';
 import { BANKS } from '../lib/bankConstants';
@@ -398,12 +398,27 @@ const Calculator = ({
                       <Checkbox
                         id="grew-wealth"
                         checked={grewWealth}
-                        onCheckedChange={setGrewWealth}
+                        onCheckedChange={(checked) => {
+                          if (depositAmount >= 200000 || !checked) {
+                            setGrewWealth(checked);
+                          }
+                        }}
+                        disabled={depositAmount < 200000}
                       />
-                      <Label htmlFor="grew-wealth" className="font-medium">
-                        [OCBC-Specific] Grew Wealth
-                      </Label>
+                      <Tooltip text="Maintain an average daily balance of at least S$200,000">
+                        <Label 
+                          htmlFor="grew-wealth" 
+                          className={`font-medium ${depositAmount < 200000 ? 'text-gray-400' : ''}`}
+                        >
+                          [OCBC-Specific] Grew Wealth
+                        </Label>
+                      </Tooltip>
                     </div>
+                    {depositAmount < 200000 && (
+                      <p className="text-xs text-amber-600 ml-6">
+                        Requires deposit amount of at least $200,000
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-3">
