@@ -298,7 +298,7 @@ const ChatWindow = ({ onClose, calculationResults = [] }) => {
           onClick={e => e.stopPropagation()}
         >
           {/* Chat header */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-gradient-primary text-white">
+          <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gradient-primary text-white">
             <h3 className="font-semibold">SmartSaver Assistant</h3>
             <Button 
               variant="ghost" 
@@ -325,7 +325,7 @@ const ChatWindow = ({ onClose, calculationResults = [] }) => {
                   className={`max-w-[80%] p-3 rounded-lg ${
                     message.role === 'user' 
                       ? 'bg-primary text-white rounded-tr-none' 
-                      : 'bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-white/20 dark:border-gray-700/20 rounded-tl-none'
+                      : 'bg-white/80 backdrop-blur-sm border border-white/20 rounded-tl-none'
                   }`}
                 >
                   <p className="whitespace-pre-wrap">{message.content}</p>
@@ -340,7 +340,7 @@ const ChatWindow = ({ onClose, calculationResults = [] }) => {
                 animate="visible"
                 className="flex justify-start"
               >
-                <div className="max-w-[80%] p-3 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-white/20 dark:border-gray-700/20 rounded-tl-none">
+                <div className="max-w-[80%] p-3 rounded-lg bg-white/80 backdrop-blur-sm border border-white/20 rounded-tl-none">
                   <div className="flex items-center space-x-2">
                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
                     <p>Thinking...</p>
@@ -366,7 +366,7 @@ const ChatWindow = ({ onClose, calculationResults = [] }) => {
           </div>
           
           {/* Chat input */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
+          <div className="p-4 border-t border-gray-200 bg-white/50 backdrop-blur-sm">
             <div className="flex space-x-2">
               <Textarea
                 value={input}

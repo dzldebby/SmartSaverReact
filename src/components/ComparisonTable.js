@@ -278,7 +278,7 @@ const ComparisonTable = ({ results, getBankById }) => {
                   
                   return (
                     <React.Fragment key={result.bankId}>
-                      <tr className={isExpanded ? "bg-primary/5 dark:bg-primary/10" : ""}>
+                      <tr className={isExpanded ? "bg-primary/5" : ""}>
                         <td>
                           <div className="flex items-center space-x-2">
                             <div
@@ -314,7 +314,7 @@ const ComparisonTable = ({ results, getBankById }) => {
                         </td>
                       </tr>
                       {isExpanded && (
-                        <tr className="bg-primary/5 dark:bg-primary/10">
+                        <tr className="bg-primary/5">
                           <td colSpan={5}>
                             <div className="glossy-surface m-2 p-3 space-y-3 animate-in fade-in">
                               <InterestBreakdown breakdown={manualBreakdown || []} />
@@ -336,13 +336,13 @@ const ComparisonTable = ({ results, getBankById }) => {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0 }}
-                className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/20 dark:bg-white/20 p-2 rounded-l-lg md:hidden"
+                className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/20 p-2 rounded-l-lg md:hidden"
               >
                 <motion.div
                   animate={{ x: [0, 10, 0] }}
                   transition={{ repeat: Infinity, duration: 1 }}
                 >
-                  <ChevronRight className="w-6 h-6 text-white dark:text-gray-200" />
+                  <ChevronRight className="w-6 h-6 text-white" />
                 </motion.div>
               </motion.div>
             )}

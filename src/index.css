@@ -36,205 +36,147 @@
 
     --radius: 0.75rem;
     
-    /* New gradient variables */
+    /* Gradient variables */
     --gradient-primary: linear-gradient(135deg, hsl(246, 84%, 59%), hsl(262, 84%, 67%));
     --gradient-secondary: linear-gradient(135deg, hsl(262, 84%, 67%), hsl(280, 84%, 65%));
     --gradient-accent: linear-gradient(135deg, hsl(246, 84%, 59%), hsl(230, 84%, 65%));
     --gradient-shimmer: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 246 84% 59%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 262 84% 67%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 246 84% 59%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 246 84% 59%;
-    
-    /* Dark mode gradient variables */
-    --gradient-shimmer: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  }
-}
-
-@layer base {
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground font-sans;
-    background-image: radial-gradient(
-      circle at top right,
-      rgba(var(--primary), 0.05),
-      transparent 40%
-    ),
-    radial-gradient(
-      circle at bottom left,
-      rgba(var(--secondary), 0.05),
-      transparent 40%
-    );
-    background-attachment: fixed;
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   }
+
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
+    @apply font-medium tracking-tight;
   }
+
   h1 {
-    @apply text-3xl md:text-4xl;
+    @apply text-3xl;
   }
+
   h2 {
-    @apply text-2xl md:text-3xl;
+    @apply text-2xl;
   }
+
   h3 {
-    @apply text-xl md:text-2xl;
+    @apply text-xl;
   }
 }
 
 @layer components {
   .glass-panel {
-    @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border border-white/20 dark:border-gray-800/20 rounded-lg shadow-sm;
+    @apply bg-white/80 backdrop-blur-lg border border-white/20 rounded-lg shadow-sm;
   }
-  
+
   .glass-card {
-    @apply bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg border border-white/20 dark:border-gray-800/20 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg;
-    position: relative;
-    overflow: hidden;
+    @apply bg-white/90 backdrop-blur-lg border border-white/20 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg;
   }
-  
+
   .glass-card::before {
     content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-    z-index: 1;
+    @apply absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-lg pointer-events-none;
   }
-  
+
   .gradient-heading {
-    @apply font-bold bg-clip-text text-transparent;
-    background-image: var(--gradient-primary);
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary font-bold;
   }
-  
+
   .input-glass {
-    @apply bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border border-gray-200 dark:border-gray-800 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50;
+    @apply bg-white/50 backdrop-blur-sm border border-gray-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50;
   }
-  
+
   .btn-primary {
-    @apply text-white font-medium py-2 px-4 rounded-md transition-all duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-primary/50;
-    background-image: var(--gradient-primary);
+    @apply bg-gradient-to-r from-primary to-secondary text-white font-medium py-2 px-4 rounded-md shadow-md hover:shadow-lg transition-all duration-200;
   }
-  
+
   .btn-secondary {
-    @apply text-white font-medium py-2 px-4 rounded-md transition-all duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-secondary/50;
-    background-image: var(--gradient-secondary);
+    @apply bg-secondary/10 text-secondary font-medium py-2 px-4 rounded-md hover:bg-secondary/20 transition-all duration-200;
   }
-  
+
   .btn-outline {
-    @apply border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium py-2 px-4 rounded-md transition-all duration-200;
+    @apply border border-gray-300 hover:bg-gray-100 font-medium py-2 px-4 rounded-md transition-all duration-200;
   }
-  
-  /* New styled components */
+
   .fancy-table {
-    @apply w-full text-sm;
-    border-collapse: separate;
-    border-spacing: 0;
+    @apply w-full border-collapse overflow-hidden rounded-lg shadow-sm;
   }
-  
+
   .fancy-table thead tr {
-    @apply bg-white/50 dark:bg-gray-900/50;
+    @apply bg-white/50;
   }
-  
+
   .fancy-table th {
-    @apply py-3 px-4 font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700;
+    @apply py-3 px-4 font-semibold text-gray-700 border-b border-gray-200;
     position: relative;
   }
-  
+
   .fancy-table th::after {
     content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background-image: var(--gradient-primary);
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
+    @apply absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-primary/0 via-primary/50 to-primary/0 transform scale-x-0 transition-transform duration-300;
   }
-  
+
   .fancy-table thead:hover th::after {
-    transform: scaleX(1);
+    @apply transform scale-x-100;
   }
-  
+
   .fancy-table tbody tr {
-    @apply border-b border-gray-100 dark:border-gray-800 transition-colors duration-150;
+    @apply border-b border-gray-100 transition-colors duration-150;
   }
-  
+
   .fancy-table tbody tr:hover {
-    @apply bg-primary/5 dark:bg-primary/10;
+    @apply bg-primary/5;
   }
-  
+
   .fancy-table td {
-    @apply py-4 px-4;
+    @apply py-3 px-4;
   }
-  
+
   .glossy-surface {
     position: relative;
+    @apply bg-white/90 backdrop-blur-md rounded-lg;
     overflow: hidden;
-    @apply bg-white/90 dark:bg-gray-900/90 backdrop-blur-md rounded-lg;
-    box-shadow: 
-      0 4px 6px -1px rgba(0, 0, 0, 0.05),
-      0 2px 4px -1px rgba(0, 0, 0, 0.03),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
   }
-  
+
   .glossy-surface::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    left: -50%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    );
+    transform: rotate(30deg);
   }
-  
+
   .fancy-border {
     position: relative;
-    border-radius: var(--radius);
-    padding: 1px;
-    background-image: var(--gradient-primary);
+    @apply p-[1px] rounded-lg bg-gradient-to-r from-primary via-secondary to-primary;
+    background-size: 200% 100%;
+    animation: gradient-animation 3s ease infinite;
   }
-  
+
   .fancy-border-content {
-    @apply bg-white dark:bg-gray-900 rounded-[calc(var(--radius)-1px)];
+    @apply bg-white rounded-[calc(var(--radius)-1px)];
     height: 100%;
   }
-  
+
   .shimmer {
     position: relative;
     overflow: hidden;
   }
-  
+
   .shimmer::after {
     content: '';
     position: absolute;
@@ -244,94 +186,95 @@
     left: 0;
     transform: translateX(-100%);
     background-image: var(--gradient-shimmer);
-    animation: none;
+    animation: shimmer 2.5s infinite;
   }
-  
+
   .shimmer:hover::after {
-    animation: shimmer 1.5s forwards;
+    animation: shimmer 1.5s infinite;
   }
-  
+
   @keyframes shimmer {
     100% {
       transform: translateX(100%);
     }
   }
-  
+
   .animated-gradient-bg {
-    background-size: 200% 200%;
-    background-image: linear-gradient(
-      -45deg, 
-      hsl(246, 84%, 65%) 0%, 
-      hsl(262, 84%, 67%) 25%, 
-      hsl(280, 84%, 65%) 50%, 
-      hsl(246, 84%, 59%) 75%, 
-      hsl(230, 84%, 65%) 100%
+    background: linear-gradient(
+      -45deg,
+      hsl(var(--primary)),
+      hsl(var(--secondary)),
+      hsl(var(--accent)),
+      hsl(var(--primary))
     );
+    background-size: 400% 400%;
     animation: gradient-animation 15s ease infinite;
   }
-  
+
   @keyframes gradient-animation {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
   }
-  
+
   .interactive-button {
-    @apply relative overflow-hidden rounded-md px-4 py-2 font-medium text-white transition-all duration-300;
-    background-image: var(--gradient-primary);
+    position: relative;
+    overflow: hidden;
+    @apply rounded-md;
   }
-  
+
   .interactive-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px -5px rgba(var(--primary), 0.4);
+    @apply shadow-lg;
   }
-  
+
   .interactive-button:active {
     transform: translateY(0);
   }
-  
+
   .interactive-button::after {
     content: '';
     position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.4) 10%, transparent 10.01%);
-    background-repeat: no-repeat;
-    background-position: 50%;
-    transform: scale(10, 10);
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
     opacity: 0;
-    transition: transform 0.5s, opacity 0.8s;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
   }
-  
+
   .interactive-button:active::after {
-    transform: scale(0, 0);
     opacity: 0.3;
-    transition: 0s;
+    transform: scale(50, 50) translate(-50%);
+    transition: all 0.5s;
   }
 }
 
 /* Animation utilities */
 .animate-in {
-  animation-duration: 300ms;
-  animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
-  animation-fill-mode: forwards;
+  animation-duration: 0.3s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
 }
 
 .fade-in {
-  opacity: 0;
   animation-name: fade-in;
 }
 
 .slide-in-from-right {
-  transform: translateX(100%);
   animation-name: slide-in-from-right;
 }
 
 .slide-in-from-bottom {
-  transform: translateY(20%);
   animation-name: slide-in-from-bottom;
 }
 
@@ -346,82 +289,87 @@
 
 @keyframes slide-in-from-right {
   from {
-    transform: translateX(100%);
+    transform: translateX(1rem);
+    opacity: 0;
   }
   to {
     transform: translateX(0);
+    opacity: 1;
   }
 }
 
 @keyframes slide-in-from-bottom {
   from {
-    transform: translateY(20%);
+    transform: translateY(1rem);
+    opacity: 0;
   }
   to {
     transform: translateY(0);
+    opacity: 1;
   }
 }
 
-/* Slider customization */
+/* Custom range input styling */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 8px;
-  background: rgba(var(--primary), 0.1);
-  border-radius: 4px;
+  height: 6px;
+  background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--secondary)));
+  border-radius: 5px;
   outline: none;
 }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
+  background: white;
   border-radius: 50%;
-  background-image: var(--gradient-primary);
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(var(--primary), 0.3);
+  border: 2px solid hsl(var(--primary));
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
 }
 
 input[type="range"]::-moz-range-thumb {
-  width: 24px;
-  height: 24px;
-  border: none;
+  width: 18px;
+  height: 18px;
+  background: white;
   border-radius: 50%;
-  background-image: var(--gradient-primary);
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(var(--primary), 0.3);
+  border: 2px solid hsl(var(--primary));
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
 }
 
 input[type="range"]:hover::-webkit-slider-thumb {
   transform: scale(1.1);
-  box-shadow: 0 2px 15px rgba(var(--primary), 0.4);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
 }
 
 input[type="range"]:hover::-moz-range-thumb {
   transform: scale(1.1);
-  box-shadow: 0 2px 15px rgba(var(--primary), 0.4);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(var(--primary), 0.05);
-  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-image: var(--gradient-primary);
-  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-image: var(--gradient-secondary);
+  background: rgba(0, 0, 0, 0.15);
 } 

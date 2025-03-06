@@ -2,15 +2,10 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import ThemeToggle from './ui/theme-toggle';
 
 const Layout = ({ children }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-gray-100 dark:from-gray-900 dark:to-gray-950 transition-colors duration-300">
-      <div className="fixed top-4 right-4 z-50">
-        <ThemeToggle />
-      </div>
-      
+    <div className="min-h-screen bg-gradient-to-br from-white to-gray-100 transition-colors duration-300">
       <div className="container mx-auto px-1 py-6 max-w-full">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -29,7 +24,7 @@ const Layout = ({ children }) => {
             {children}
           </main>
           
-          <footer className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-800 text-center text-sm text-muted-foreground">
+          <footer className="mt-16 pt-8 border-t border-gray-200 text-center text-sm text-muted-foreground">
             <p>© {new Date().getFullYear()} SmartSaver. All rights reserved.</p>
           </footer>
         </motion.div>

@@ -8,5 +8,4 @@ export { Checkbox } from './checkbox.tsx';
 export { Label } from './label.tsx';
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs.tsx';
 export { Avatar } from './avatar.tsx';
-export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select.tsx';
-export { default as ThemeToggle } from './theme-toggle.jsx'; 
+export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select.tsx'; 

@@ -243,31 +243,31 @@ function calculateSCBonusSaver(depositAmount, bankInfo, bankRequirements, addTie
   const eligibleAmount = Math.min(depositAmount, 100000);
   
   // Base interest rate 0.05%
-  totalInterest += addTier(depositAmount, 0.0005, 'Base Interest');
+  totalInterest += addTier(depositAmount, 0.0005, 'Base Interest - 0.05%');
   
   // Salary credit bonus (>= $3,000)
   if (bankRequirements.hasSalary && bankRequirements.salaryAmount >= 3000) {
-    totalInterest += addTier(eligibleAmount, 0.01, 'Salary Credit Bonus (>= $3,000)');
+    totalInterest += addTier(eligibleAmount, 0.01, 'Salary Credit Bonus (>= $3,000) - 1.00%');
   }
   
   // Card spend bonus (>= $1,000)
   if (bankRequirements.spendAmount >= 1000) {
-    totalInterest += addTier(eligibleAmount, 0.01, 'Card Spend Bonus (>= $1,000)');
+    totalInterest += addTier(eligibleAmount, 0.01, 'Card Spend Bonus (>= $1,000) - 1.00%');
   }
   
   // Investment bonus (Unit Trust)
   if (bankRequirements.hasInvestments) {
-    totalInterest += addTier(eligibleAmount, 0.02, 'Investment Bonus (Unit Trust)');
+    totalInterest += addTier(eligibleAmount, 0.02, 'Investment Bonus (Unit Trust) - 2.00%');
   }
   
   // Insurance bonus
   if (bankRequirements.hasInsurance) {
-    totalInterest += addTier(eligibleAmount, 0.02, 'Insurance Bonus');
+    totalInterest += addTier(eligibleAmount, 0.02, 'Insurance Bonus - 2.00%');
   }
   
   // Bill payments bonus (3 payments)
   if (bankRequirements.giroCount >= 3) {
-    totalInterest += addTier(eligibleAmount, 0.0023, 'Bill Payments Bonus (3 payments)');
+    totalInterest += addTier(eligibleAmount, 0.0023, 'Bill Payments Bonus (3 payments) - 0.23%');
   }
   
   // Calculate effective interest rate
@@ -322,7 +322,7 @@ function calculateUOBOne(depositAmount, bankInfo, bankRequirements, addTier) {
       // First $75K at 3.00%
       const firstTierAmount = Math.min(remainingAmount, 75000);
       if (firstTierAmount > 0) {
-        totalInterest += addTier(firstTierAmount, 0.03, 'Salary + Spend (First $75K)');
+        totalInterest += addTier(firstTierAmount, 0.03, 'Salary + Spend (First $75K) - 3.00%');
         remainingAmount -= firstTierAmount;
       }
       
@@ -330,7 +330,7 @@ function calculateUOBOne(depositAmount, bankInfo, bankRequirements, addTier) {
       if (remainingAmount > 0) {
         const nextTierAmount = Math.min(remainingAmount, 50000);
         if (nextTierAmount > 0) {
-          totalInterest += addTier(nextTierAmount, 0.045, 'Salary + Spend (Next $50K)');
+          totalInterest += addTier(nextTierAmount, 0.045, 'Salary + Spend (Next $50K) - 4.50%');
           remainingAmount -= nextTierAmount;
         }
       }
@@ -339,83 +339,66 @@ function calculateUOBOne(depositAmount, bankInfo, bankRequirements, addTier) {
       if (remainingAmount > 0) {
         const finalTierAmount = Math.min(remainingAmount, 25000);
         if (finalTierAmount > 0) {
-          totalInterest += addTier(finalTierAmount, 0.06, 'Salary + Spend (Next $25K)');
+          totalInterest += addTier(finalTierAmount, 0.06, 'Salary + Spend (Next $25K) - 6.00%');
           remainingAmount -= finalTierAmount;
         }
       }
       
       // Amount above $150K at 0.05%
       if (remainingAmount > 0) {
-        totalInterest += addTier(remainingAmount, 0.0005, 'Salary + Spend (Above $150K)');
+        totalInterest += addTier(remainingAmount, 0.0005, 'Salary + Spend (Above $150K) - 0.05%');
       }
     }
-    // Then check GIRO + Spend
+    // Check spend + GIRO next
     else if (hasGiro) {
-      // First $75K at 2.00%
+      // First $75K at 1.50%
       const firstTierAmount = Math.min(remainingAmount, 75000);
       if (firstTierAmount > 0) {
-        totalInterest += addTier(firstTierAmount, 0.02, 'GIRO + Spend (First $75K)');
+        totalInterest += addTier(firstTierAmount, 0.015, 'Spend + GIRO (First $75K) - 1.50%');
         remainingAmount -= firstTierAmount;
       }
       
-      // Next $50K at 3.00%
+      // Next $75K at 1.80%
       if (remainingAmount > 0) {
-        const nextTierAmount = Math.min(remainingAmount, 50000);
+        const nextTierAmount = Math.min(remainingAmount, 75000);
         if (nextTierAmount > 0) {
-          totalInterest += addTier(nextTierAmount, 0.03, 'GIRO + Spend (Next $50K)');
+          totalInterest += addTier(nextTierAmount, 0.018, 'Spend + GIRO (Next $75K) - 1.80%');
           remainingAmount -= nextTierAmount;
-        }
-      }
-      
-      // Next $25K at 0.05%
-      if (remainingAmount > 0) {
-        const finalTierAmount = Math.min(remainingAmount, 25000);
-        if (finalTierAmount > 0) {
-          totalInterest += addTier(finalTierAmount, 0.0005, 'GIRO + Spend (Next $25K)');
-          remainingAmount -= finalTierAmount;
         }
       }
       
       // Amount above $150K at 0.05%
       if (remainingAmount > 0) {
-        totalInterest += addTier(remainingAmount, 0.0005, 'GIRO + Spend (Above $150K)');
+        totalInterest += addTier(remainingAmount, 0.0005, 'Spend + GIRO (Above $150K) - 0.05%');
       }
     }
-    // Finally apply spend only rates
+    // Just spend
     else {
-      // First $75K at 0.65%
+      // First $75K at 0.75%
       const firstTierAmount = Math.min(remainingAmount, 75000);
       if (firstTierAmount > 0) {
-        totalInterest += addTier(firstTierAmount, 0.0065, 'Spend Only (First $75K)');
+        totalInterest += addTier(firstTierAmount, 0.0075, 'Spend Only (First $75K) - 0.75%');
         remainingAmount -= firstTierAmount;
       }
       
-      // Next $50K at 0.05%
+      // Next $75K at 0.85%
       if (remainingAmount > 0) {
-        const nextTierAmount = Math.min(remainingAmount, 50000);
+        const nextTierAmount = Math.min(remainingAmount, 75000);
         if (nextTierAmount > 0) {
-          totalInterest += addTier(nextTierAmount, 0.0005, 'Spend Only (Next $50K)');
+          totalInterest += addTier(nextTierAmount, 0.0085, 'Spend Only (Next $75K) - 0.85%');
           remainingAmount -= nextTierAmount;
-        }
-      }
-      
-      // Next $25K at 0.05%
-      if (remainingAmount > 0) {
-        const finalTierAmount = Math.min(remainingAmount, 25000);
-        if (finalTierAmount > 0) {
-          totalInterest += addTier(finalTierAmount, 0.0005, 'Spend Only (Next $25K)');
-          remainingAmount -= finalTierAmount;
         }
       }
       
       // Amount above $150K at 0.05%
       if (remainingAmount > 0) {
-        totalInterest += addTier(remainingAmount, 0.0005, 'Spend Only (Above $150K)');
+        totalInterest += addTier(remainingAmount, 0.0005, 'Spend Only (Above $150K) - 0.05%');
       }
     }
-  } else {
-    // If minimum spend not met, only apply base interest
-    totalInterest += addTier(depositAmount, 0.0005, 'Base Interest (No minimum spend)');
+  }
+  else {
+    // Base interest rate 0.05%
+    totalInterest += addTier(depositAmount, 0.0005, 'Base Interest - 0.05%');
   }
   
   // Calculate effective interest rate
@@ -458,21 +441,21 @@ function calculateOCBC360(depositAmount, bankInfo, bankRequirements, addTier) {
   const eligibleAmount = Math.min(depositAmount, 100000);
   
   // Base interest rate 0.05%
-  totalInterest += addTier(depositAmount, 0.0005, 'Base Interest');
+  totalInterest += addTier(depositAmount, 0.0005, 'Base Interest - 0.05%');
   
   // Salary credit bonus (>= $1,800)
   if (bankRequirements.hasSalary && bankRequirements.salaryAmount >= 1800) {
     // First $75K at 2.00%
     const firstTierAmount = Math.min(eligibleAmount, 75000);
     if (firstTierAmount > 0) {
-      totalInterest += addTier(firstTierAmount, 0.02, 'Salary Credit Bonus (First $75K)');
+      totalInterest += addTier(firstTierAmount, 0.02, 'Salary Credit Bonus (First $75K) - 2.00%');
     }
     
     // Next $25K at 4.00%
     if (eligibleAmount > 75000) {
       const nextTierAmount = Math.min(eligibleAmount - 75000, 25000);
       if (nextTierAmount > 0) {
-        totalInterest += addTier(nextTierAmount, 0.04, 'Salary Credit Bonus (Next $25K)');
+        totalInterest += addTier(nextTierAmount, 0.04, 'Salary Credit Bonus (Next $25K) - 4.00%');
       }
     }
   }
@@ -482,82 +465,65 @@ function calculateOCBC360(depositAmount, bankInfo, bankRequirements, addTier) {
     // First $75K at 1.20%
     const firstTierAmount = Math.min(eligibleAmount, 75000);
     if (firstTierAmount > 0) {
-      totalInterest += addTier(firstTierAmount, 0.012, 'Increased Balance Bonus (First $75K)');
+      totalInterest += addTier(firstTierAmount, 0.012, 'Increased Balance Bonus (First $75K) - 1.20%');
     }
     
     // Next $25K at 2.40%
     if (eligibleAmount > 75000) {
       const nextTierAmount = Math.min(eligibleAmount - 75000, 25000);
       if (nextTierAmount > 0) {
-        totalInterest += addTier(nextTierAmount, 0.024, 'Increased Balance Bonus (Next $25K)');
+        totalInterest += addTier(nextTierAmount, 0.024, 'Increased Balance Bonus (Next $25K) - 2.40%');
       }
     }
   }
   
-  // Card spend bonus (>= $500)
+  // Spend bonus (>= $500)
   if (bankRequirements.spendAmount >= 500) {
     // First $75K at 0.60%
     const firstTierAmount = Math.min(eligibleAmount, 75000);
     if (firstTierAmount > 0) {
-      totalInterest += addTier(firstTierAmount, 0.006, 'Card Spend Bonus (First $75K)');
+      totalInterest += addTier(firstTierAmount, 0.006, 'Card Spend Bonus (First $75K) - 0.60%');
     }
     
-    // Next $25K at 0.60%
+    // Next $25K at 1.20%
     if (eligibleAmount > 75000) {
       const nextTierAmount = Math.min(eligibleAmount - 75000, 25000);
       if (nextTierAmount > 0) {
-        totalInterest += addTier(nextTierAmount, 0.006, 'Card Spend Bonus (Next $25K)');
+        totalInterest += addTier(nextTierAmount, 0.012, 'Card Spend Bonus (Next $25K) - 1.20%');
       }
     }
   }
   
-  // Insurance bonus
+  // Insure bonus
   if (bankRequirements.hasInsurance) {
-    // First $75K at 1.20%
+    // First $75K at 0.60%
     const firstTierAmount = Math.min(eligibleAmount, 75000);
     if (firstTierAmount > 0) {
-      totalInterest += addTier(firstTierAmount, 0.012, 'Insurance Bonus (First $75K)');
+      totalInterest += addTier(firstTierAmount, 0.006, 'Insurance Bonus (First $75K) - 0.60%');
     }
     
-    // Next $25K at 2.40%
+    // Next $25K at 1.20%
     if (eligibleAmount > 75000) {
       const nextTierAmount = Math.min(eligibleAmount - 75000, 25000);
       if (nextTierAmount > 0) {
-        totalInterest += addTier(nextTierAmount, 0.024, 'Insurance Bonus (Next $25K)');
+        totalInterest += addTier(nextTierAmount, 0.012, 'Insurance Bonus (Next $25K) - 1.20%');
       }
     }
   }
   
-  // Investment bonus
+  // Invest bonus
   if (bankRequirements.hasInvestments) {
-    // First $75K at 1.20%
+    // First $75K at 0.60%
     const firstTierAmount = Math.min(eligibleAmount, 75000);
     if (firstTierAmount > 0) {
-      totalInterest += addTier(firstTierAmount, 0.012, 'Investment Bonus (First $75K)');
+      totalInterest += addTier(firstTierAmount, 0.006, 'Investment Bonus (First $75K) - 0.60%');
     }
     
-    // Next $25K at 2.40%
+    // Next $25K at 1.20%
     if (eligibleAmount > 75000) {
       const nextTierAmount = Math.min(eligibleAmount - 75000, 25000);
       if (nextTierAmount > 0) {
-        totalInterest += addTier(nextTierAmount, 0.024, 'Investment Bonus (Next $25K)');
-      }
-    }
-  }
-  
-  // Grow balance bonus
-  if (bankRequirements.grewWealth) {
-    // First $75K at 2.40%
-    const firstTierAmount = Math.min(eligibleAmount, 75000);
-    if (firstTierAmount > 0) {
-      totalInterest += addTier(firstTierAmount, 0.024, 'Grow Balance Bonus (First $75K)');
-    }
-    
-    // Next $25K at 2.40%
-    if (eligibleAmount > 75000) {
-      const nextTierAmount = Math.min(eligibleAmount - 75000, 25000);
-      if (nextTierAmount > 0) {
-        totalInterest += addTier(nextTierAmount, 0.024, 'Grow Balance Bonus (Next $25K)');
+        totalInterest += addTier(nextTierAmount, 0.012, 'Investment Bonus (Next $25K) - 1.20%');
       }
     }
   }
@@ -570,6 +536,9 @@ function calculateOCBC360(depositAmount, bankInfo, bankRequirements, addTier) {
   if (bankRequirements.hasSalary && bankRequirements.salaryAmount >= 1800) {
     explanation += ` Salary credit of $${bankRequirements.salaryAmount.toLocaleString()} qualifies for bonus interest.`;
   }
+  if (bankRequirements.increasedBalance) {
+    explanation += ' Account balance increased by at least $500 from last month.';
+  }
   if (bankRequirements.spendAmount >= 500) {
     explanation += ` Card spend of $${bankRequirements.spendAmount.toLocaleString()} qualifies for bonus interest.`;
   }
@@ -578,12 +547,6 @@ function calculateOCBC360(depositAmount, bankInfo, bankRequirements, addTier) {
   }
   if (bankRequirements.hasInvestments) {
     explanation += ' Investment qualifies for bonus interest.';
-  }
-  if (bankRequirements.increasedBalance) {
-    explanation += ' Increased balance qualifies for bonus interest.';
-  }
-  if (bankRequirements.grewWealth) {
-    explanation += ' Grow balance qualifies for bonus interest.';
   }
   
   return {
@@ -598,30 +561,17 @@ function calculateOCBC360(depositAmount, bankInfo, bankRequirements, addTier) {
  * Calculate interest for BOC SmartSaver
  */
 function calculateBOCSmartSaver(depositAmount, bankInfo, bankRequirements, addTier) {
-  console.log('=== BOC SmartSaver Calculation Debug ===');
-  console.log('Input parameters:', {
-    depositAmount,
-    bankInfo: {
-      id: bankInfo.id,
-      name: bankInfo.name,
-      maxCap: bankInfo.maxCap,
-      baseRate: bankInfo.baseRate,
-      tiers: bankInfo.tiers
-    },
-    bankRequirements
-  });
+  console.log(`calculateBOCSmartSaver for ${bankInfo.id}`, { depositAmount, bankRequirements });
   
   let totalInterest = 0;
   let explanation = '';
   let remainingAmount = depositAmount;
-
+  
   // Process base interest tiers
   const baseTiers = bankInfo.tiers.filter(t => t.type === 'base');
-  console.log('Base tiers found:', baseTiers);
   
   // Sort tiers by maxAmount to process in ascending order
   baseTiers.sort((a, b) => a.maxAmount - b.maxAmount);
-  console.log('Sorted base tiers:', baseTiers);
   
   // Track previous tier cap for tier calculation
   let prevCap = 0;
@@ -630,218 +580,103 @@ function calculateBOCSmartSaver(depositAmount, bankInfo, bankRequirements, addTi
     const tierSize = cap - prevCap;
     const amountInTier = Math.min(Math.max(0, remainingAmount - prevCap), tierSize);
     
-    console.log('Processing base tier:', {
-      tier,
-      prevCap,
-      tierSize,
-      amountInTier,
-      remainingAmount
-    });
-    
     if (amountInTier <= 0) {
-      console.log('Skipping tier - no amount to process');
       break;
     }
     
     const rate = tier.rate;
-    const interest = amountInTier * rate;
-    totalInterest += interest;
-    console.log('Added base interest:', {
-      amountInTier,
-      rate,
-      interest,
-      totalInterest
-    });
+    totalInterest += addTier(amountInTier, rate, 
+      `${tier.remarks} - ${(rate * 100).toFixed(2)}%`);
     
-    addTier(amountInTier, rate, tier.remarks);
     prevCap = cap;
   }
 
   // Add bonus interest based on requirements
-  console.log('Checking minimum balance requirement:', {
-    depositAmount,
-    minRequired: 1500,
-    meetsRequirement: depositAmount >= 1500
-  });
-
   if (depositAmount >= 1500) {  // Minimum balance requirement
     // Process salary credit bonus if applicable
-    console.log('Checking salary credit bonus:', {
-      hasSalary: bankRequirements.hasSalary,
-      salaryAmount: bankRequirements.salaryAmount,
-      minRequired: 2000
-    });
-
     if (bankRequirements.hasSalary && bankRequirements.salaryAmount >= 2000) {
       const salaryTier = bankInfo.tiers.find(t => t.type === 'salary');
-      console.log('Salary tier found:', salaryTier);
       
       if (salaryTier) {
         const rate = salaryTier.rate;
         const bonusAmount = Math.min(depositAmount, salaryTier.maxAmount);
-        const interest = bonusAmount * rate;
-        totalInterest += interest;
-        console.log('Added salary bonus:', {
-          bonusAmount,
-          rate,
-          interest,
-          totalInterest
-        });
-        addTier(bonusAmount, rate, salaryTier.remarks);
-      }
-    }
-
-    // Process wealth bonus if applicable
-    console.log('Checking wealth bonus:', {
-      hasInsurance: bankRequirements.hasInsurance
-    });
-
-    if (bankRequirements.hasInsurance) {
-      const wealthTier = bankInfo.tiers.find(t => t.type === 'wealth');
-      console.log('Wealth tier found:', wealthTier);
-      
-      if (wealthTier) {
-        const rate = wealthTier.rate;
-        const bonusAmount = Math.min(depositAmount, wealthTier.maxAmount);
-        const interest = bonusAmount * rate;
-        totalInterest += interest;
-        console.log('Added wealth bonus:', {
-          bonusAmount,
-          rate,
-          interest,
-          totalInterest
-        });
-        addTier(bonusAmount, rate, wealthTier.remarks);
+        totalInterest += addTier(bonusAmount, rate, 
+          `Salary Credit Bonus (>= $2,000) - ${(rate * 100).toFixed(2)}%`);
       }
     }
     
-    // Process spend bonus if applicable
-    const spendAmount = bankRequirements.spendAmount || 0;
-    console.log('Checking spend bonus:', {
-      spendAmount,
-      minRequired: 500
-    });
-
-    if (spendAmount >= 500) {
-      // Get appropriate spend tier based on amount
-      const spendTiers = bankInfo.tiers.filter(t => t.type === 'spend');
-      console.log('Spend tiers found:', spendTiers);
+    // Process bill payment bonus if applicable
+    if (bankRequirements.giroCount >= 3) {
+      const billTier = bankInfo.tiers.find(t => t.type === 'payment');
       
-      let spendTier;
-      if (spendAmount >= 1500) {
-        spendTier = spendTiers.find(t => t.remarks.includes('>= $1500'));
-      } else {
-        spendTier = spendTiers.find(t => t.remarks.includes('$500-$1499'));
+      if (billTier) {
+        const rate = billTier.rate;
+        const bonusAmount = Math.min(depositAmount, billTier.maxAmount);
+        totalInterest += addTier(bonusAmount, rate, 
+          `Bill Payment Bonus (>= 3 payments) - ${(rate * 100).toFixed(2)}%`);
       }
-      
-      console.log('Selected spend tier:', spendTier);
+    }
+    
+    // Process credit card spend bonus if applicable
+    if (bankRequirements.spendAmount >= 500) {
+      const spendTier = bankInfo.tiers.find(t => t.type === 'spend');
       
       if (spendTier) {
         const rate = spendTier.rate;
         const bonusAmount = Math.min(depositAmount, spendTier.maxAmount);
-        const interest = bonusAmount * rate;
-        totalInterest += interest;
-        console.log('Added spend bonus:', {
-          bonusAmount,
-          rate,
-          interest,
-          totalInterest
-        });
-        addTier(bonusAmount, rate, spendTier.remarks);
+        totalInterest += addTier(bonusAmount, rate, 
+          `Card Spend Bonus (>= $500) - ${(rate * 100).toFixed(2)}%`);
       }
     }
-
-    // Process payment bonus if applicable
-    console.log('Checking payment bonus:', {
-      giroCount: bankRequirements.giroCount,
-      minRequired: 3
-    });
-
-  if (bankRequirements.giroCount >= 3) {
-      const paymentTier = bankInfo.tiers.find(t => t.type === 'payment');
-      console.log('Payment tier found:', paymentTier);
+    
+    // Process insurance/wealth bonus if applicable
+    if (bankRequirements.hasInsurance) {
+      const wealthTier = bankInfo.tiers.find(t => t.type === 'wealth');
       
-      if (paymentTier) {
-        const rate = paymentTier.rate;
-        const bonusAmount = Math.min(depositAmount, paymentTier.maxAmount);
-        const interest = bonusAmount * rate;
-        totalInterest += interest;
-        console.log('Added payment bonus:', {
-          bonusAmount,
-          rate,
-          interest,
-          totalInterest
-        });
-        addTier(bonusAmount, rate, paymentTier.remarks);
+      if (wealthTier) {
+        const rate = wealthTier.rate;
+        const bonusAmount = Math.min(depositAmount, wealthTier.maxAmount);
+        totalInterest += addTier(bonusAmount, rate, 
+          `Insurance Bonus - ${(rate * 100).toFixed(2)}%`);
       }
     }
-
+    
     // Process extra interest for amount above $100k if applicable
-    console.log('Checking extra interest:', {
-      depositAmount,
-      threshold: 100000,
-      exceedsThreshold: depositAmount > 100000
-    });
-
-  if (depositAmount > 100000) {
+    if (depositAmount > 100000) {
       const extraTier = bankInfo.tiers.find(t => t.type === 'extra');
-      console.log('Extra tier found:', extraTier);
       
-    if (extraTier) {
-      const extraAmount = depositAmount - 100000;
+      if (extraTier) {
+        const extraAmount = depositAmount - 100000;
         const rate = extraTier.rate;
-        const interest = extraAmount * rate;
-        totalInterest += interest;
-        console.log('Added extra interest:', {
-          extraAmount,
-          rate,
-          interest,
-          totalInterest
-        });
-        addTier(extraAmount, rate, extraTier.remarks);
+        totalInterest += addTier(extraAmount, rate, 
+          `Extra Interest (Above $100K) - ${(rate * 100).toFixed(2)}%`);
       }
     }
   }
   
   // Calculate effective interest rate
   const interestRate = totalInterest / depositAmount;
-  console.log('Final calculation:', {
-    totalInterest,
-    interestRate,
-    depositAmount
-  });
   
   // Generate explanation
   explanation = `BOC SmartSaver account with $${depositAmount.toLocaleString()} deposit.`;
-  if (depositAmount < 1500) {
-    explanation += ' Minimum balance of $1,500 required for bonus interest.';
-  } else {
-    if (bankRequirements.hasSalary && bankRequirements.salaryAmount >= 2000) {
-      explanation += ` Salary credit of $${bankRequirements.salaryAmount.toLocaleString()} qualifies for bonus interest.`;
-    }
-    if (bankRequirements.hasInsurance) {
-      explanation += ' Insurance qualifies for bonus interest.';
-    }
-    if (bankRequirements.spendAmount >= 500) {
-      explanation += ` Card spend of $${bankRequirements.spendAmount.toLocaleString()} qualifies for bonus interest.`;
-    }
-    if (bankRequirements.giroCount >= 3) {
-      explanation += ' 3 bill payments qualify for bonus interest.';
-    }
+  if (bankRequirements.hasSalary && bankRequirements.salaryAmount >= 2000) {
+    explanation += ` Salary credit of $${bankRequirements.salaryAmount.toLocaleString()} qualifies for bonus interest.`;
   }
-  
-  console.log('Final result:', {
-    totalInterest,
-    interestRate,
-    explanation
-  });
-  console.log('=== End BOC SmartSaver Calculation ===');
+  if (bankRequirements.giroCount >= 3) {
+    explanation += ` ${bankRequirements.giroCount} bill payments qualify for bonus interest.`;
+  }
+  if (bankRequirements.spendAmount >= 500) {
+    explanation += ` Card spend of $${bankRequirements.spendAmount.toLocaleString()} qualifies for bonus interest.`;
+  }
+  if (bankRequirements.hasInsurance) {
+    explanation += ` Insurance qualifies for bonus interest.`;
+  }
   
   return {
     totalInterest,
     interestRate,
     explanation,
-    breakdown: []
+    breakdown: [] // Will be populated by calculateBankInterest
   };
 }
 
@@ -860,55 +695,29 @@ function calculateChocolate(depositAmount, bankInfo, bankRequirements, addTier) 
   const firstTierCap = 20000;
   const firstTierAmount = Math.min(depositAmount, firstTierCap);
   const firstTierInterest = firstTierAmount * firstTierRate;
-  totalInterest += firstTierInterest;
-  
-  breakdown.push({
-    amountInTier: parseFloat(firstTierAmount),
-    tierRate: parseFloat(firstTierRate),
-    tierInterest: firstTierInterest,
-    monthlyInterest: firstTierInterest / 12,
-    description: "First $20,000 at 3.3%"
-  });
+  totalInterest += addTier(firstTierAmount, firstTierRate, "First $20,000 - 3.30%");
   
   // Second tier: 3.0% for next $30,000
   if (depositAmount > firstTierCap) {
     const secondTierRate = 0.03; // 3.0%
     const secondTierCap = 30000;
     const secondTierAmount = Math.min(depositAmount - firstTierCap, secondTierCap);
-    const secondTierInterest = secondTierAmount * secondTierRate;
-    totalInterest += secondTierInterest;
-    
-    breakdown.push({
-      amountInTier: parseFloat(secondTierAmount),
-      tierRate: parseFloat(secondTierRate),
-      tierInterest: secondTierInterest,
-      monthlyInterest: secondTierInterest / 12,
-      description: "Next $30,000 at 3.0%"
-    });
+    totalInterest += addTier(secondTierAmount, secondTierRate, "Next $30,000 - 3.00%");
   }
   
   // Third tier: 0% for amount beyond $50,000
   if (depositAmount > 50000) {
     const thirdTierRate = 0.0; // 0.0%
     const thirdTierAmount = depositAmount - 50000;
-    const thirdTierInterest = thirdTierAmount * thirdTierRate; // Will be 0
-    
-    breakdown.push({
-      amountInTier: parseFloat(thirdTierAmount),
-      tierRate: parseFloat(thirdTierRate),
-      tierInterest: thirdTierInterest,
-      monthlyInterest: thirdTierInterest / 12,
-      description: "Amount beyond $50,000 at 0.0%"
-    });
+    addTier(thirdTierAmount, thirdTierRate, "Amount beyond $50,000 - 0.00%");
   }
   
   // Calculate effective interest rate
   const interestRate = totalInterest / depositAmount;
   
   // Generate explanation
-  explanation = `Chocolate account with $${depositAmount.toLocaleString()} deposit. Interest is earned on the first $50,000 only.`;
-  
-  console.log("Chocolate breakdown:", breakdown);
+  explanation = `Chocolate account with $${depositAmount.toLocaleString()} deposit. `;
+  explanation += `First $20,000 at 3.30%, next $30,000 at 3.00%, amount beyond $50,000 at 0.00%.`;
   
   return {
     totalInterest,
@@ -922,73 +731,59 @@ function calculateChocolate(depositAmount, bankInfo, bankRequirements, addTier) 
  * Calculate interest for DBS Multiplier
  */
 function calculateDBSMultiplier(depositAmount, bankInfo, bankRequirements, addTier) {
-  console.log('=== DBS Multiplier Calculation Debug ===');
-  console.log('Input parameters:', {
-    depositAmount,
-    bankInfo: {
-      id: bankInfo.id,
-      name: bankInfo.name,
-      maxCap: bankInfo.maxCap,
-      baseRate: bankInfo.baseRate,
-      tiers: bankInfo.tiers
-    },
-    bankRequirements
-  });
+  console.log(`calculateDBSMultiplier for ${bankInfo.id}`, { depositAmount, bankRequirements });
   
   let totalInterest = 0;
   let explanation = '';
-
-  // Step 1: Check salary credit prerequisite
-  if (!bankRequirements.hasSalary) {
-    console.log('No salary credit - applying base interest only');
-    const baseRate = 0.0005; // 0.05%
-    totalInterest += addTier(depositAmount, baseRate, "Base Interest (No Salary Credit)");
-    return {
-      totalInterest,
-      interestRate: baseRate,
-      explanation: `DBS Multiplier account with $${depositAmount.toLocaleString()} deposit. No salary credit - only base interest applies.`,
-      breakdown: []
-    };
-  }
-
-  // Step 2: Calculate total eligible transactions and category count
+  const breakdown = [];
+  
+  // Step 1: Calculate eligible amount (capped at $100,000)
+  const eligibleAmount = Math.min(depositAmount, 100000);
+  
+  // Step 2: Calculate total transactions and category count
   let totalTransactions = 0;
-    let categoryCount = 0;
-
-  // Add card spend if exists
-    if (bankRequirements.spendAmount >= 500) {
-    totalTransactions += bankRequirements.spendAmount;
-      categoryCount++;
-    }
-
+  let categoryCount = 0;
+  
+  // Add salary amount if category selected
+  if (bankRequirements.hasSalary) {
+    totalTransactions += bankRequirements.salaryAmount || 0;
+    categoryCount++;
+  }
+  
+  // Add spend amount if category selected
+  if (bankRequirements.spendAmount > 0) {
+    totalTransactions += bankRequirements.spendAmount || 0;
+    categoryCount++;
+  }
+  
   // Add home loan amount if category selected
   if (bankRequirements.hasHomeLoan) {
     totalTransactions += bankRequirements.homeLoanAmount || 0;
-      categoryCount++;
-    }
-
+    categoryCount++;
+  }
+  
   // Add insurance amount if category selected
-    if (bankRequirements.hasInsurance) {
+  if (bankRequirements.hasInsurance) {
     totalTransactions += bankRequirements.insuranceAmount || 0;
-      categoryCount++;
-    }
-
+    categoryCount++;
+  }
+  
   // Add investment amount if category selected
   if (bankRequirements.hasInvestments) {
     totalTransactions += bankRequirements.investmentAmount || 0;
-      categoryCount++;
+    categoryCount++;
   }
-
+  
   console.log('Transaction details:', {
     totalTransactions,
     categoryCount
   });
-
+  
   // Step 3: Check minimum transaction requirement
   if (totalTransactions < 500 || categoryCount === 0) {
     console.log('Minimum transaction not met - applying base interest only');
     const baseRate = 0.0005; // 0.05%
-    totalInterest += addTier(depositAmount, baseRate, "Base Interest (Min Transaction Not Met)");
+    totalInterest += addTier(depositAmount, baseRate, "Base Interest (Min Transaction Not Met) - 0.05%");
     return {
       totalInterest,
       interestRate: baseRate,
@@ -996,55 +791,56 @@ function calculateDBSMultiplier(depositAmount, bankInfo, bankRequirements, addTi
       breakdown: []
     };
   }
-
+  
   // Step 4: Determine tier based on category count and transaction amount
   let tierType = `cat${categoryCount}_`;
   if (totalTransactions >= 30000) {
     tierType += "high";
   } else if (totalTransactions >= 15000) {
     tierType += "mid";
-      } else {
+  } else {
     tierType += "low";
   }
-
-  console.log('Selected tier:', tierType);
-
-  // Find the appropriate tier
-  const bonusTier = bankInfo.tiers.find(t => t.type === tierType);
-  if (bonusTier) {
-    const rate = bonusTier.rate;
-    const bonusAmount = Math.min(depositAmount, bonusTier.maxAmount);
-    const interest = bonusAmount * rate;
-    totalInterest += interest;
-    console.log('Added bonus interest:', {
-      bonusAmount,
-      rate,
-      interest,
-      totalInterest
-    });
-    addTier(bonusAmount, rate, bonusTier.remarks);
+  
+  // Step 5: Get the matching tier from bank_info
+  try {
+    const tier = bankInfo.tiers.find(t => t.tierType === tierType);
+    if (tier) {
+      const rate = parseFloat(tier.interestRate);
+      
+      // Step 6: Apply bonus interest to eligible amount
+      if (eligibleAmount > 0) {
+        totalInterest += addTier(eligibleAmount, rate, 
+          `Bonus Interest (${categoryCount} categories, $${totalTransactions.toLocaleString()} transactions) - ${(rate * 100).toFixed(2)}%`);
+      }
+      
+      // Step 7: Apply base interest to remaining amount above cap
+      if (depositAmount > eligibleAmount) {
+        const baseRate = 0.0005;  // 0.05%
+        const remaining = depositAmount - eligibleAmount;
+        totalInterest += addTier(remaining, baseRate, 
+          "Base Interest (Amount Above Cap) - 0.05%");
+      }
+    } else {
+      // Handle case where no matching tier is found
+      console.warn(`No matching interest rate tier found for ${tierType}`);
+      const baseRate = 0.0005;  // 0.05%
+      totalInterest += addTier(depositAmount, baseRate, 
+        "Base Interest (No Matching Tier) - 0.05%");
+    }
+  } catch (error) {
+    console.error("Error finding tier:", error);
+    const baseRate = 0.0005;  // 0.05%
+    totalInterest += addTier(depositAmount, baseRate, 
+      "Base Interest (Error Finding Tier) - 0.05%");
   }
   
   // Calculate effective interest rate
   const interestRate = totalInterest / depositAmount;
-  console.log('Final calculation:', {
-    totalInterest,
-    interestRate,
-    depositAmount
-  });
   
   // Generate explanation
-  explanation = `DBS Multiplier account with $${depositAmount.toLocaleString()} deposit.`;
-  if (categoryCount > 0) {
-    explanation += ` ${categoryCount} category${categoryCount > 1 ? 'ies' : ''} with $${totalTransactions.toLocaleString()} in transactions qualifies for bonus interest.`;
-  }
-  
-  console.log('Final result:', {
-    totalInterest,
-    interestRate,
-    explanation
-  });
-  console.log('=== End DBS Multiplier Calculation ===');
+  explanation = `DBS Multiplier account with $${depositAmount.toLocaleString()} deposit. `;
+  explanation += `Total transactions: $${totalTransactions.toLocaleString()} across ${categoryCount} categories.`;
   
   return {
     totalInterest,
@@ -1076,7 +872,7 @@ function calculateCIMBFastSaver(depositAmount, bankInfo, bankRequirements, addTi
     
     const amountInTier = Math.min(remainingAmount, tierAmount);
     totalInterest += addTier(amountInTier, tierRate, 
-      `Tier Interest (up to $${tierAmount.toLocaleString()})`);
+      `Tier Interest (up to $${tierAmount.toLocaleString()}) - ${(tierRate * 100).toFixed(2)}%`);
     
     remainingAmount -= amountInTier;
   }
@@ -1107,7 +903,7 @@ function calculateMaybankSaveUp(depositAmount, bankInfo, bankRequirements, addTi
   
   // Base interest rate
   const baseRate = bankInfo.baseRate || 0.0025; // Default to 0.25%
-  totalInterest += addTier(depositAmount, baseRate, "Base Interest");
+  totalInterest += addTier(depositAmount, baseRate, `Base Interest - ${(baseRate * 100).toFixed(2)}%`);
   
   // Count qualifying products
   let productCount = 0;
@@ -1139,19 +935,23 @@ function calculateMaybankSaveUp(depositAmount, bankInfo, bankRequirements, addTi
   
   // Apply bonus interest based on product count
   let bonusRate = 0;
+  let totalRate = 0;
   
   if (productCount >= 3) {
-    bonusRate = 0.03 - baseRate; // 3.00% total
+    totalRate = 0.03; // 3.00% total
+    bonusRate = totalRate - baseRate;
   } else if (productCount >= 2) {
-    bonusRate = 0.02 - baseRate; // 2.00% total
+    totalRate = 0.02; // 2.00% total
+    bonusRate = totalRate - baseRate;
   } else if (productCount >= 1) {
-    bonusRate = 0.01 - baseRate; // 1.00% total
+    totalRate = 0.01; // 1.00% total
+    bonusRate = totalRate - baseRate;
   }
   
   if (bonusRate > 0) {
     const eligibleAmount = Math.min(depositAmount, 50000); // Cap at $50,000
     totalInterest += addTier(eligibleAmount, bonusRate, 
-      `Bonus Interest (${productCount} products)`);
+      `Bonus Interest (${productCount} products) - ${(bonusRate * 100).toFixed(2)}%`);
   }
   
   // Calculate effective interest rate
@@ -1159,6 +959,9 @@ function calculateMaybankSaveUp(depositAmount, bankInfo, bankRequirements, addTi
   
   // Generate explanation
   explanation = `Maybank SaveUp account with $${depositAmount.toLocaleString()} deposit.`;
+  if (productCount > 0) {
+    explanation += ` ${productCount} qualifying product${productCount > 1 ? 's' : ''} for bonus interest.`;
+  }
   
   return {
     totalInterest,
@@ -1180,14 +983,14 @@ function calculateHSBCEveryday(depositAmount, bankInfo, bankRequirements, addTie
   
   // Base interest rate
   const baseRate = bankInfo.baseRate || 0.001; // Default to 0.10%
-  totalInterest += addTier(depositAmount, baseRate, "Base Interest");
+  totalInterest += addTier(depositAmount, baseRate, `Base Interest - ${(baseRate * 100).toFixed(2)}%`);
   
   // Check for salary credit
   if (bankRequirements.hasSalary && bankRequirements.salaryAmount >= 2000) {
     const bonusRate = 0.015; // 1.50% bonus
     const eligibleAmount = Math.min(depositAmount, 50000); // Cap at $50,000
     totalInterest += addTier(eligibleAmount, bonusRate, 
-      "Salary Credit Bonus (>= $2,000)");
+      `Salary Credit Bonus (>= $2,000) - ${(bonusRate * 100).toFixed(2)}%`);
   }
   
   // Check for spending
@@ -1195,7 +998,7 @@ function calculateHSBCEveryday(depositAmount, bankInfo, bankRequirements, addTie
     const bonusRate = 0.01; // 1.00% bonus
     const eligibleAmount = Math.min(depositAmount, 50000); // Cap at $50,000
     totalInterest += addTier(eligibleAmount, bonusRate, 
-      "Card Spend Bonus (>= $500)");
+      `Card Spend Bonus (>= $500) - ${(bonusRate * 100).toFixed(2)}%`);
   }
   
   // Calculate effective interest rate
