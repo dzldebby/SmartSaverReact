@@ -11,4 +11,5 @@ export { Avatar } from './avatar.tsx';
 export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select.tsx';
 export { Tooltip } from './tooltip.jsx';
 export { InfoTooltip } from './info-tooltip.jsx';
-export { FeedbackForm } from './feedback-form.jsx'; 
+export { FeedbackForm } from './feedback-form.jsx';
+export { ReportCalculationDialog } from './report-dialog.jsx'; 

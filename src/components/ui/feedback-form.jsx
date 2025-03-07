@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { ThumbsUp } from 'lucide-react';
 
 export const FeedbackForm = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -82,9 +83,9 @@ export const FeedbackForm = () => {
           console.log('Opening feedback form');
           setIsVisible(true);
         }}
-        className="text-blue-500 hover:text-blue-700 text-sm"
+        className="text-blue-500 hover:text-blue-700 text-sm flex items-center gap-2"
       >
-        📝 Provide Feedback
+        <ThumbsUp size={20} />  Rate your experience
       </button>
 
       {isVisible && (
@@ -163,7 +164,7 @@ export const FeedbackForm = () => {
                 {/* Open-ended Feedback */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">
-                    Any other feedback?
+                    Any other feedback (Optional)?
                   </label>
                   <textarea
                     value={openFeedback}

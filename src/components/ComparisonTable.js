@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui';
+import { ChevronDown, ChevronUp, ChevronRight, AlertTriangle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, ReportCalculationDialog } from './ui';
 import InterestBreakdown from './InterestBreakdown';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -265,7 +265,17 @@ const ComparisonTable = ({ results, getBankById }) => {
     >
       <Card className={`glass-card ${shouldShimmer ? 'shimmer' : ''}`}>
         <CardHeader className="bg-purple-700 text-white py-2">
-          <CardTitle className="text-center text-white">Bank Comparison Table</CardTitle>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <CardTitle className="text-center text-white">Bank Comparison Table</CardTitle>
+            <ReportCalculationDialog 
+              trigger={
+                <button className="flex items-center gap-2 text-sm px-3 py-1.5 bg-orange-50 text-orange-700 border border-orange-200 rounded-md hover:bg-orange-100 transition-colors self-end sm:self-auto">
+                  <AlertTriangle size={16} />
+                  <span>Report Calculation Error</span>
+                </button>
+              } 
+            />
+          </div>
         </CardHeader>
         <CardContent className="p-3">
           <div className="relative">

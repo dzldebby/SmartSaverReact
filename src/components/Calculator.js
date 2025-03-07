@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Wallet, BadgePercent, PiggyBank, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, Checkbox, Label, Input, Slider, Button, Tooltip, InfoTooltip, FeedbackForm } from './ui';
@@ -9,6 +9,7 @@ import { BANKS } from '../lib/bankConstants';
 import StepProgress from './StepProgress';
 import ComparisonTable from './ComparisonTable';
 import Footer from './Footer';
+import { supabase } from '../lib/supabase';
 
 const Calculator = ({
   depositAmount,
@@ -50,6 +51,8 @@ const Calculator = ({
   const [optimizationResults, setOptimizationResults] = useState([]);
   const [results, setResults] = useState([]);
   const [hasTransactionCode, setHasTransactionCode] = useState(false);
+  const [isSavingData, setIsSavingData] = useState(false);
+  const [saveError, setSaveError] = useState(null);
 
   // Add a local formatNumber function if it's not provided as a prop
   const formatNumberLocal = (n) => {
@@ -96,15 +99,50 @@ const Calculator = ({
   };
 
   // Add handleCalculate function
-  const handleCalculate = () => {
-    setIsCalculating(true);
+  const handleCalculate = async () => {
+    setIsSavingData(true);
+    setSaveError(null);
+    
     try {
-      calculateResults();
-    } catch (error) {
-      console.error('Calculation error:', error);
+      // Record user input data to Supabase
+      const { data, error } = await supabase
+        .from('calculator_inputs')
+        .insert([
+          {
+            deposit_amount: parseFloat(depositAmount) || 0,
+            has_salary: hasSalary,
+            salary_amount: parseFloat(salaryAmount) || 0,
+            transaction_code: transactionCode,
+            card_spend: parseFloat(cardSpend) || 0,
+            giro_count: parseInt(giroCount) || 0,
+            has_insurance: hasInsurance,
+            insurance_amount: parseFloat(insuranceAmount) || 0,
+            has_investments: hasInvestments,
+            investment_amount: parseFloat(investmentAmount) || 0,
+            has_home_loan: hasHomeLoan,
+            home_loan_amount: parseFloat(homeLoanAmount) || 0,
+            increased_balance: increasedBalance,
+            grew_wealth: grewWealth
+          }
+        ]);
+      
+      if (error) {
+        console.error('Error saving calculator data:', error);
+        setSaveError(error.message);
+        // Continue with calculation even if saving fails
+      } else {
+        console.log('Calculator data saved successfully:', data);
+      }
+    } catch (err) {
+      console.error('Unexpected error saving data:', err);
+      setSaveError(err.message);
+      // Continue with calculation even if saving fails
     } finally {
-      setIsCalculating(false);
+      setIsSavingData(false);
     }
+    
+    // Call the original calculate function
+    calculateResults();
   };
 
   // Add handleSubmit function
@@ -465,14 +503,20 @@ const Calculator = ({
           </form>
 
           {/* Buttons */}
-          <div className="flex gap-4">
+          {saveError && (
+            <div className="text-red-500 text-sm mt-2">
+              Note: Your calculation was processed, but we couldn't save your data: {saveError}
+            </div>
+          )}
+          
+          <div className="flex gap-2 mt-4">
             <button
               type="button"
               onClick={handleCalculate}
-              disabled={isCalculating}
               className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-blue-300"
+              disabled={isSavingData}
             >
-              {isCalculating ? 'Calculating...' : 'Calculate interest'}
+              {isSavingData ? 'Processing...' : 'Calculate'}
             </button>
             <button
               type="button"
