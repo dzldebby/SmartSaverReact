@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 
 export const FeedbackForm = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -6,6 +7,8 @@ export const FeedbackForm = () => {
   const [npsScore, setNpsScore] = useState(null);
   const [openFeedback, setOpenFeedback] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
   const formRef = useRef(null);
 
   useEffect(() => {
@@ -24,30 +27,52 @@ export const FeedbackForm = () => {
     };
   }, [isVisible]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     console.log('Submit button clicked');
     e.preventDefault();
     console.log('Current state:', { satisfaction, npsScore, openFeedback });
     
-    // Here you would typically send the feedback data to your backend
-    console.log('Submitting feedback:', {
-      satisfaction,
-      npsScore,
-      openFeedback
-    });
+    setIsSubmitting(true);
+    setSubmitError(null);
     
-    setSubmitted(true);
-    console.log('Submitted state set to true');
-    
-    // Increased timeout to 3 seconds for better visibility
-    setTimeout(() => {
-      console.log('Closing feedback form');
-      setIsVisible(false);
-      setSubmitted(false);
-      setSatisfaction(0);
-      setNpsScore(null);
-      setOpenFeedback('');
-    }, 3000);
+    try {
+      // Submit feedback to Supabase
+      const { data, error } = await supabase
+        .from('feedback')
+        .insert([
+          { 
+            satisfaction, 
+            nps_score: npsScore, 
+            open_feedback: openFeedback 
+          }
+        ]);
+      
+      if (error) {
+        console.error('Error submitting feedback:', error);
+        setSubmitError('Failed to submit feedback. Please try again.');
+        return;
+      }
+      
+      console.log('Feedback submitted successfully:', data);
+      setSubmitted(true);
+      console.log('Submitted state set to true');
+      
+      // Increased timeout to 3 seconds for better visibility
+      setTimeout(() => {
+        console.log('Closing feedback form');
+        setIsVisible(false);
+        setSubmitted(false);
+        setSatisfaction(0);
+        setNpsScore(null);
+        setOpenFeedback('');
+        setSubmitError(null);
+      }, 3000);
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      setSubmitError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -70,10 +95,7 @@ export const FeedbackForm = () => {
           >
             {!submitted ? (
               <form 
-                onSubmit={(e) => {
-                  console.log('Form submit triggered');
-                  handleSubmit(e);
-                }} 
+                onSubmit={handleSubmit} 
                 className="space-y-6"
               >
                 <h2 className="text-xl font-semibold mb-4">Your Feedback</h2>
@@ -152,32 +174,30 @@ export const FeedbackForm = () => {
                   />
                 </div>
 
+                {submitError && (
+                  <div className="text-red-500 text-sm mt-2">
+                    {submitError}
+                  </div>
+                )}
+
                 <div className="flex justify-end gap-2 mt-6">
                   <button
                     type="button"
                     onClick={() => setIsVisible(false)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-500"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
                   >
                     Cancel
                   </button>
                   <button
-                    type="button"
-                    onClick={(e) => {
-                      console.log('Submit button clicked directly');
-                      if (!satisfaction || npsScore === null) {
-                        console.log('Button is disabled, satisfaction:', satisfaction, 'npsScore:', npsScore);
-                        return;
-                      }
-                      handleSubmit(e);
-                    }}
+                    type="submit"
                     className={`px-4 py-2 text-sm font-medium text-white rounded ${
-                      !satisfaction || npsScore === null 
+                      satisfaction === 0 || npsScore === null || isSubmitting
                         ? 'bg-blue-300 cursor-not-allowed' 
                         : 'bg-blue-500 hover:bg-blue-600'
                     }`}
-                    disabled={!satisfaction || npsScore === null}
+                    disabled={satisfaction === 0 || npsScore === null || isSubmitting}
                   >
-                    Submit Feedback
+                    {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
                   </button>
                 </div>
               </form>
