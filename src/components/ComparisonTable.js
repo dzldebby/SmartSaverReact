@@ -265,13 +265,14 @@ const ComparisonTable = ({ results, getBankById }) => {
     >
       <Card className={`glass-card ${shouldShimmer ? 'shimmer' : ''}`}>
         <CardHeader className="bg-purple-700 text-white py-2">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <CardTitle className="text-center text-white">Bank Comparison Table</CardTitle>
+          <div className="flex flex-row items-center justify-between gap-2">
+            <CardTitle className="text-white text-sm sm:text-base md:text-lg">Bank Comparison</CardTitle>
             <ReportCalculationDialog 
               trigger={
-                <button className="flex items-center gap-2 text-sm px-3 py-1.5 bg-orange-50 text-orange-700 border border-orange-200 rounded-md hover:bg-orange-100 transition-colors self-end sm:self-auto">
-                  <AlertTriangle size={16} />
-                  <span>Report Calculation Error</span>
+                <button className="flex items-center gap-1 text-xs px-2 py-0.5 sm:px-3 sm:py-1.5 bg-orange-50 text-orange-700 border border-orange-200 rounded-md hover:bg-orange-100 transition-colors">
+                  <AlertTriangle size={12} className="sm:w-4 sm:h-4" />
+                  <span className="sm:hidden">Report</span>
+                  <span className="hidden sm:inline">Report Issue</span>
                 </button>
               } 
             />
