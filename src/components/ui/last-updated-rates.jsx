@@ -4,13 +4,12 @@ import { Calendar, X } from 'lucide-react';
 
 // Sample data - replace with actual data from your API
 const BANK_UPDATE_DATES = [
-  { name: 'DBS', lastUpdated: new Date('2024-06-05') },
-  { name: 'OCBC', lastUpdated: new Date('2024-06-01') },
-  { name: 'UOB', lastUpdated: new Date('2024-05-28') },
-  { name: 'Standard Chartered', lastUpdated: new Date('2024-06-03') },
-  { name: 'POSB', lastUpdated: new Date('2024-06-05') },
-  { name: 'Maybank', lastUpdated: new Date('2024-05-30') },
-  { name: 'Citibank', lastUpdated: new Date('2024-05-25') }
+  { name: 'DBS', lastUpdated: new Date('2025-03-08') },
+  { name: 'OCBC', lastUpdated: new Date('2025-03-08') },
+  { name: 'UOB', lastUpdated: new Date('2025-03-08') },
+  { name: 'Standard Chartered', lastUpdated: new Date('2025-03-08') },
+  { name: 'POSB', lastUpdated: new Date('2025-03-08') },
+  { name: 'Chocolate', lastUpdated: new Date('2025-03-08') }
 ];
 
 // Find the most recent update date
