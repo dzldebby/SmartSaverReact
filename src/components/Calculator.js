@@ -48,6 +48,7 @@ const Calculator = ({
   const [isAdvancedRequirementsOpen, setIsAdvancedRequirementsOpen] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [calculationMode, setCalculationMode] = useState('singleBank');
   const [optimizationResults, setOptimizationResults] = useState([]);
   const [results, setResults] = useState([]);
   const [hasTransactionCode, setHasTransactionCode] = useState(false);
@@ -149,6 +150,14 @@ const Calculator = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     handleCalculate();
+  };
+
+  const performCalculation = async () => {
+    if (calculationMode === 'singleBank') {
+      await handleCalculate();
+    } else {
+      handleOptimize();
+    }
   };
 
   return (
@@ -502,29 +511,66 @@ const Calculator = ({
             </div>
           </form>
 
-          {/* Buttons */}
+          {/* Calculate buttons */}
           {saveError && (
             <div className="text-red-500 text-sm mt-2">
               Note: Your calculation was processed, but we couldn't save your data: {saveError}
             </div>
           )}
           
-          <div className="flex gap-2 mt-4">
+          {/* Calculation Mode Selection */}
+          <div className="mb-3 mt-4">
+            <h3 className="text-xl font-semibold flex items-center mb-2">
+              <TrendingUp className="mr-2 h-5 w-5 text-primary" />
+              Step 3: Choose allocation method
+            </h3>
+            <div className="glass-panel p-4 sm:p-6 space-y-4">
+              <p className="text-sm text-gray-700 mb-2">Allocate to:</p>
+              <div className="flex gap-3">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="calculationMode"
+                    value="singleBank"
+                    checked={calculationMode === 'singleBank'}
+                    onChange={() => setCalculationMode('singleBank')}
+                    className="mr-2 h-4 w-4 accent-blue-600"
+                  />
+                  <span className="text-sm">Single Bank</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="calculationMode"
+                    value="multipleBanks" 
+                    checked={calculationMode === 'multipleBanks'}
+                    onChange={() => setCalculationMode('multipleBanks')}
+                    className="mr-2 h-4 w-4 accent-purple-600"
+                  />
+                  <span className="text-sm">Multiple Banks</span>
+                </label>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {calculationMode === 'singleBank' 
+                  ? "Compare interest rates across banks individually" 
+                  : "Find the optimal distribution across banks to maximize returns"}
+              </p>
+            </div>
+          </div>
+          
+          {/* Single Calculate Button */}
+          <div className="mt-4">
             <button
               type="button"
-              onClick={handleCalculate}
-              className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-blue-300"
-              disabled={isSavingData}
+              onClick={performCalculation}
+              disabled={isSavingData || isOptimizing}
+              className={`w-full py-2.5 rounded text-white font-medium 
+                ${isSavingData || isOptimizing ? 'opacity-70' : 'hover:opacity-90'}
+                bg-gradient-to-r from-purple-700 to-indigo-600 shadow-md transition-all duration-200`}
             >
-              {isSavingData ? 'Processing...' : 'Calculate'}
-            </button>
-            <button
-              type="button"
-              onClick={handleOptimize}
-              disabled={isOptimizing}
-              className="flex-1 bg-purple-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:bg-green-300"
-            >
-              {isOptimizing ? 'Optimizing...' : 'Find best strategy'}
+              {isSavingData || isOptimizing 
+                ? (calculationMode === 'singleBank' ? 'Processing...' : 'Optimizing...') 
+                : 'Calculate!'}
             </button>
           </div>
         </div>
