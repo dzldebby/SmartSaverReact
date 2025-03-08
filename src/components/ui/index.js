@@ -12,4 +12,5 @@ export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 export { Tooltip } from './tooltip.jsx';
 export { InfoTooltip } from './info-tooltip.jsx';
 export { FeedbackForm } from './feedback-form.jsx';
-export { ReportCalculationDialog } from './report-dialog.jsx'; 
+export { ReportCalculationDialog } from './report-dialog.jsx';
+export { LastUpdatedRates } from './last-updated-rates.jsx'; 

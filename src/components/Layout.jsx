@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { LastUpdatedRates } from './ui';
 
 const Layout = ({ children }) => {
   return (
@@ -17,7 +18,22 @@ const Layout = ({ children }) => {
               <img src="/calculator-icon.svg" alt="Calculator Icon" className="w-10 h-10" />
               <h1 className="gradient-heading text-4xl md:text-5xl">SmartSaver</h1>
             </div>
-            <p className="text-muted-foreground">Compare rates and find the best banking options for your needs</p>
+            
+            {/* Desktop layout - LastUpdatedRates on the right */}
+            <div className="hidden sm:flex sm:items-center sm:justify-between">
+              <p className="text-muted-foreground">Compare rates and find the best banking options for your needs</p>
+              <LastUpdatedRates />
+            </div>
+            
+            {/* Mobile layout - LastUpdatedRates inline after text */}
+            <div className="sm:hidden">
+              <p className="text-muted-foreground inline">
+                Compare rates and find the best banking options for your needs{' '}
+                <span className="inline-flex items-center ml-1">
+                  <LastUpdatedRates />
+                </span>
+              </p>
+            </div>
           </header>
           
           <main>

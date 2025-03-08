@@ -136,6 +136,11 @@ module.exports = {
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
         'gradient-primary': 'linear-gradient(to right, #4F46E5, #8B5CF6)',
       },
+      zIndex: {
+        '100': '100',
+        '200': '200',
+        '9999': '9999',
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],
