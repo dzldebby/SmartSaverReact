@@ -6,7 +6,6 @@ import { useToast } from '../ToastProvider';
 
 const ISSUE_TYPES = [
   'Interest rate calculation error',
-  'Promotion not applied correctly',
   'Missing bank feature',
   'Missing condition',
   'Outdated information',
@@ -18,10 +17,8 @@ const BANKS = [
   'OCBC',
   'UOB',
   'Standard Chartered',
-  'POSB',
-  'Maybank',
-  'Citibank',
-  'Other'
+  'Chocolate',
+  'BOC'
 ];
 
 export const ReportCalculationDialog = ({ trigger }) => {
