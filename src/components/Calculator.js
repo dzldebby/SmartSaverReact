@@ -239,9 +239,12 @@ const Calculator = ({
                           checked={hasSalary}
                           onCheckedChange={setHasSalary}
                         />
-                        <Label htmlFor="has-salary" className="font-medium">
-                          Credit Salary to Bank Account
-                        </Label>
+                        <Tooltip text="Select this if you are able to credit your salary to a bank. Salary credit is one of the key requirements for the highest interest rates.">
+                          <Label htmlFor="has-salary" className="font-medium">
+                            Credit Salary to Bank Account
+                          </Label>
+                        </Tooltip>
+                        
                       </div>
                       
                       {hasSalary && (
@@ -270,9 +273,11 @@ const Calculator = ({
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="card-spend" className="text-sm block">
-                          Card Spend per Month ($)
-                        </Label>
+                        <Tooltip text="Input the amount you spend on your credit card per month">
+                          <Label htmlFor="card-spend" className="text-sm block">
+                            Monthly Credit Card Spend ($)
+                          </Label>
+                        </Tooltip>
                         <Input
                           id="card-spend"
                           type="number"
@@ -287,9 +292,11 @@ const Calculator = ({
                       </div>
                       
                       <div className="space-y-2">
+                      <Tooltip text="Select the number of giro / bills you pay per month">
                         <Label htmlFor="giro-count" className="text-sm block">
                           Number of Bill Payments / GIRO
                         </Label>
+                      </Tooltip>
                         <Input
                           id="giro-count"
                           type="number"
@@ -338,7 +345,7 @@ const Calculator = ({
                           onCheckedChange={setHasInsurance}
                         />
                         <Label htmlFor="has-insurance" className="font-medium">
-                          Have Insurance Products
+                          Have eligible Insurance Products
                         </Label>
                       </div>
                       
@@ -371,7 +378,7 @@ const Calculator = ({
                           onCheckedChange={setHasInvestments}
                         />
                         <Label htmlFor="has-investments" className="font-medium">
-                          Have Investments
+                          Have eligible Investments
                         </Label>
                       </div>
                       
@@ -404,7 +411,7 @@ const Calculator = ({
                           onCheckedChange={setHasHomeLoan}
                         />
                         <Label htmlFor="has-home-loan" className="font-medium">
-                          Have Home Loan
+                          [DBS Multiplier-Specific] Have Home Loan
                         </Label>
                       </div>
                       
